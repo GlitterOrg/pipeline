@@ -1,0 +1,17 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<script src="closureimportscript.js"></script>
+<script src="../bower_components/parse-css/parse-css.js"></script>
+<script src="../bower_components/closure-library/closure/goog/base.js"></script>
+<script src="../bower_components/closure-library/closure/goog/deps.js"></script>
+<script src="deps.js"></script>
+<script>goog.require('css');</script>
+
+<polymer-element name="css-poly" hidden>
+  <script>
+    Polymer({
+      ready: function() {
+        css.exec(this.textContent);
+      }
+    });
+  </script>
+</polymer-element>

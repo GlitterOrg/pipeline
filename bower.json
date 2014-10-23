@@ -1,0 +1,22 @@
+{
+  "name": "css-poly",
+  "version": "0.0.0",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.4.1",
+    "closure-library": "https://github.com/google/closure-library.git",
+    "compiler-latest": "http://dl.google.com/closure-compiler/compiler-latest.zip",
+    "parse-css": "https://github.com/tabatkins/parse-css.git#master",
+    "polymer-dev": "Polymer/polymer-dev#~0.4.1"
+  },
+  "resolutions": {
+    "parse-css": "master"
+  }
+}

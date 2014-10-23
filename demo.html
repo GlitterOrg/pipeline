@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<link rel="import" href="src/css-poly.html"> 
+<script src='glitter.js'></script>
+<css-poly>
+#contents {
+  scrollOut: glow;
+  width: 400px;
+  height: 2000px;
+  background: red;
+}
+
+#container {
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+}
+
+.contentBox {
+  height: 198px;
+  width: 398px;
+  /* Y U NO border shorthand */
+  border-width: 1px;
+  border-color: black;
+  border-style: solid;
+}
+
+* {
+  -webkit-user-select: none;
+}
+</css-poly>
+<script src='bower_components/polymer-gestures/polymer-gestures.js'></script>
+<div id='container'>
+  <div id='contents'>
+    <div class='contentBox' style='background: red' id='glower'></div>
+    <div class='contentBox' style='background: green'></div>
+    <div class='contentBox' style='background: blue'></div>
+    <div class='contentBox' style='background: yellow'></div>
+    <div class='contentBox' style='background: red'></div>
+    <div class='contentBox' style='background: green'></div>
+    <div class='contentBox' style='background: blue'></div>
+    <div class='contentBox' style='background: yellow'></div>
+    <div class='contentBox' style='background: red'></div>
+    <div class='contentBox' style='background: green'></div>
+  </div>
+</div>
+<script>
+registerPropertyHandler('scrollOut', {
+  apply: isolate(
+    function(mutation) {
+      if (mutation.value == 'glow') {
+        if (isNaN(this.overflow)) { this.overflow = 0; }
+        this.overflow += mutation.specified.computedScrollDelta;
+        if (this.overflow < 0) {
+          glower.style.backgroundColor = 'rgb(255, 0, ' + (-this.overflow * 2) + ')';
+          mutation.specified.scrollOffset = 0;
+        } else {
+          glower.style.backgroundColor = 'red';
+        }
+      }
+    }, {overflow: 0}
+  )
+});
+
+isAScroller(contents);
+
+PolymerGestures.addEventListener(container, 'trackend', function(e) {
+  var oldColor = getComputedStyle(glower).backgroundColor;
+  glower.animate([{backgroundColor: oldColor}, {backgroundColor: 'red'}], 300);
+  glower.style.backgroundColor = 'red';
+});
+</script>

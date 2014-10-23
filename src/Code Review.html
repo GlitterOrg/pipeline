@@ -1,0 +1,2191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0042)https://codereview.chromium.org/472853003/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>
+    
+    
+      
+    
+    
+      Issue 472853003: Run 2-keyframe animations with non-liear timing on the compositor. -
+    
+    Code Review
+  </title>
+  <link rel="icon" href="https://codereview.chromium.org/static/favicon.ico">
+  <link type="text/css" rel="stylesheet" href="./Code Review_files/styles.css">
+  <script type="text/javascript" async="" src="./Code Review_files/ga.js"></script><script type="text/javascript" src="./Code Review_files/jquery.js"></script>
+  <script type="text/javascript" src="./Code Review_files/script.js"></script>
+  <link rel="alternate" type="application/atom+xml" title="Recent Issues" href="https://codereview.chromium.org/rss/all">
+   
+     <link rel="alternate" type="application/atom+xml" title="Issues created by me" href="https://codereview.chromium.org/rss/mine/ikilpatrick">
+     <link rel="alternate" type="application/atom+xml" title="Issues reviewable by me" href="https://codereview.chromium.org/rss/reviews/ikilpatrick">
+     <link rel="alternate" type="application/atom+xml" title="Issues closed by me" href="https://codereview.chromium.org/rss/closd/ikilpatrick">
+   
+   
+     <link rel="alternate" type="application/atom+xml" title="Issue 472853003" href="https://codereview.chromium.org/rss/issue/472853003">
+   
+
+   <!-- head block to insert js/css for forms processing -->
+   
+   <!-- /head -->
+</head>
+<body onunload="M_unloadPage();">
+
+<!-- Begin help window -->
+<script type="text/javascript"><!--
+var xsrfToken = '769f34abef05198ffba2e4b269353647';
+var helpDisplayed = false;
+document.onclick = M_clickCommon;
+var media_url = "/static/";
+var base_url = "/";
+
+var publish_link = "/472853003/publish";
+
+// -->
+</script>
+<div id="help" style="display: none;">
+
+<div style="font-size: medium; text-align: center;">Keyboard Shortcuts</div>
+<hr>
+<table class="shortcuts">
+  <tbody><tr valign="top">
+    <td>
+      <table>
+        <tbody><tr>
+          <td></td><th>File</th>
+        </tr>
+        <tr>
+          <td><span>u</span> <b>:</b></td><td>up to issue</td>
+        </tr>
+        <tr>
+          <td><span>m</span> <b>:</b></td><td>publish + mail comments</td>
+        </tr>
+	<tr>
+	  <td><span>M</span> <b>:</b></td><td>edit review message</td>
+	</tr>
+        <tr>
+          <td><span>j</span> / <span>k</span> <b>:</b></td><td>jump to file after / before current file</td>
+        </tr>
+        <tr>
+          <td><span>J</span> / <span>K</span> <b>:</b></td><td>jump to next file with a comment after / before current file</td>
+        </tr>
+        <tr>
+          <td></td><th>Side-by-side diff</th>
+        </tr>
+        <tr>
+          <td><span>i</span> <b>:</b></td><td>toggle intra-line diffs</td>
+        </tr>
+        <tr>
+          <td><span>e</span> <b>:</b></td><td>expand all comments</td>
+        </tr>
+        <tr>
+          <td><span>c</span> <b>:</b></td><td>collapse all comments</td>
+        </tr>
+        <tr>
+          <td><span>s</span> <b>:</b></td><td>toggle showing all comments</td>
+        </tr>
+        <tr>
+          <td><span>n</span> / <span>p</span> <b>:</b></td><td>next / previous diff chunk or comment</td>
+        </tr>
+        <tr>
+          <td><span>N</span> / <span>P</span> <b>:</b></td><td>next / previous comment</td>
+        </tr>
+        <tr>
+          <td><span>&lt;Up&gt;</span> / <span>&lt;Down&gt;</span> <b>:</b></td><td>next / previous line</td>
+        </tr>
+        <tr>
+          <td><span>&lt;Enter&gt;</span> <b>:</b></td><td>respond to / edit current comment</td>
+        </tr>
+        <tr>
+          <td><span>d</span> <b>:</b></td><td>mark current comment as done</td>
+        </tr>
+      </tbody></table>
+    </td>
+    <td>
+      <table>
+        <tbody><tr>
+         <td></td><th>Issue</th>
+        </tr>
+        <tr>
+          <td><span>u</span> <b>:</b></td><td>up to list of issues</td>
+        </tr>
+        <tr>
+          <td><span>m</span> <b>:</b></td><td>publish + mail comments</td>
+        </tr>
+	<tr>
+	  <td><span>j</span> / <span>k</span> <b>:</b></td><td>jump to patch after / before current patch</td>
+	</tr>
+	<tr>
+	  <td><span>o</span> / <span>&lt;Enter&gt;</span> <b>:</b></td><td>open current patch in side-by-side view</td>
+	</tr>
+	<tr>
+	  <td><span>i</span> <b>:</b></td><td>open current patch in unified diff view</td>
+	</tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td></td><th>Issue List</th></tr>
+        <tr>
+          <td><span>j</span> / <span>k</span> <b>:</b></td><td>jump to issue after / before current issue</td>
+        </tr>
+        <tr>
+          <td><span>o</span> / <span>&lt;Enter&gt;</span> <b>:</b></td><td>open current issue</td>
+        </tr>
+        <tr>
+	  <td><span>#</span> <b>:</b></td>
+	  <td>close issue</td>
+	</tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+          <td></td><th>Comment/message editing</th>
+        </tr>
+        <tr>
+          <td><span>&lt;Ctrl&gt;</span> + <span>s</span> or <span>&lt;Ctrl&gt;</span> + <span>Enter</span> <b>:</b></td><td>save comment</td>
+        </tr>
+        <tr>
+          <td><span>&lt;Esc&gt;</span> <b>:</b></td><td>cancel edit</td>
+        </tr>
+      </tbody></table>
+    </td>
+  </tr>
+
+</tbody></table>
+</div>
+<!-- End help window -->
+
+<div align="right">
+
+<div style="float:left; font-size:x-large"><img style="vertical-align:middle" src="./Code Review_files/chromium-24.png"> Chromium Code Reviews</div>
+
+
+
+
+<b>ikilpatrick@chromium.org (ikilpatrick)</b>
+|
+
+<span style="color:red">Please choose your nickname with</span>
+<a class="novisit" href="https://codereview.chromium.org/settings">Settings</a>
+|
+
+
+<a class="novisit" target="_blank" href="http://code.google.com/p/rietveld/wiki/CodeReviewHelp">Help</a>
+
+|
+<a class="novisit" href="http://www.chromium.org/">Chromium Project</a>
+|
+
+<a class="novisit" href="https://codereview.chromium.org/_ah/logout?continue=https://www.google.com/accounts/Logout%3Fcontinue%3Dhttps://appengine.google.com/_ah/logout%253Fcontinue%253Dhttps://codereview.chromium.org/472853003/%26service%3Dah">Sign out</a>
+
+</div>
+<div class="counter">(195)</div>
+<br>
+<div class="mainmenu">
+  
+  <a href="https://codereview.chromium.org/" class="active">Issues</a>
+  <a href="https://codereview.chromium.org/search">Search</a>
+
+</div>
+<div class="mainmenu2">
+  
+  
+    
+    &nbsp;&nbsp;&nbsp;
+    <a href="https://codereview.chromium.org/mine">My Issues</a>
+    |
+    <a href="https://codereview.chromium.org/starred">Starred</a>
+    &nbsp;&nbsp;&nbsp;
+    <a href="https://codereview.chromium.org/all?closed=0">Open</a>
+    |
+    <a href="https://codereview.chromium.org/all?closed=1">Closed</a>
+    |
+    <a href="https://codereview.chromium.org/all">All</a>
+  
+
+</div>
+
+<div>
+
+  <h2>
+    <span id="issue-star-472853003">
+  
+    
+      <a href="javascript:M_addIssueStar(472853003)">
+	<img src="./Code Review_files/star-dark.gif" width="15" height="15" border="0"></a>
+    
+  
+</span>
+
+
+    Issue <a href="./Code Review_files/Code Review.html" onmouseover="M_showPopUp(this, &#39;popup-issue&#39;);">
+            472853003</a>:
+    Run 2-keyframe animations with non-liear timing on the compositor.  (Closed) 
+  </h2>
+
+  <table class="issue-details" border="0" width="100%">
+    <tbody><tr valign="top">
+
+      <td class="meta" width="20%">
+        
+          <div>
+            
+              <a class="novisit" href="https://codereview.chromium.org/472853003/edit">
+                Edit Issue
+              </a>
+            
+            <br>
+            
+              <a class="novisit" href="https://codereview.chromium.org/472853003/publish">
+                Publish+Mail Comments
+              </a> ('m')
+            
+            
+              <br>
+              <a class="novisit" href="https://codereview.chromium.org/472853003/diff/60001/ManualTests/animation/compositor-animation-2-keyframe.html">
+                <b>Start Review</b>
+              </a>
+            
+          </div>
+        
+        <div class="issue_details_sidebar">
+          <div><b>Created:</b><br>
+            1 month, 1 week ago by me
+          </div>
+          <div><b>Modified:</b><br>
+            1 month ago
+          </div>
+          <div><b>Reviewers:</b><br>
+            <span class="approval"><a href="https://codereview.chromium.org/user/dstockwell" onmouseover="M_showUserInfoPopup(this)">dstockwell</a></span>, <a href="https://codereview.chromium.org/user/Timothy%20Loh" onmouseover="M_showUserInfoPopup(this)">Timothy Loh</a>, <span class="approval"><a href="https://codereview.chromium.org/user/shans" onmouseover="M_showUserInfoPopup(this)">shans</a></span>
+          </div>
+          
+          <div><b>CC:</b><br>
+            blink-reviews, shans, rjwright, Mike Lawther (Google), blink-reviews-animation_chromium.org, Timothy Loh, darktears, Steve Block, Eric Willigers
+          </div>
+          
+          
+          <div><b>Base URL:</b><br>
+            
+            https://chromium.googlesource.com/chromium/blink.git@master
+            
+          </div>
+          
+          
+          <div><b>Project:</b><br>
+            <a href="https://codereview.chromium.org/search?project=blink">
+              blink
+            </a>
+          </div>
+          
+          <div><b>Visibility:</b><br>
+            
+                Public.
+            
+          </div>
+          
+          <div><a title="Find reviews for the same repository ID - 82804f94bf4b4d551c864ff2ef44317633f76246" href="https://codereview.chromium.org/search?repo_guid=82804f94bf4b4d551c864ff2ef44317633f76246">
+            <b>More Reviews</b></a>
+          </div>
+          
+        </div>
+      </td>
+
+      <td style="padding-left: .8em; padding-right: .8em;" width="80%">
+        
+
+
+
+
+  <h3><a id="issue-description-pointer" href="javascript:M_toggleSection('issue-description')" class="toggled-section opentriangle">
+    Description</a></h3>
+  <div id="issue-description">Run 2-keyframe animations with non-linear timing on the compositor.
+
+The animation has to have a linear timing function on the first keyframe.
+
+BUG=
+
+Committed: <a href="https://src.chromium.org/viewvc/blink?view=rev&revision=180842">https://src.chromium.org/viewvc/blink?view=rev&amp;revision=180842</a>
+  </div>
+
+
+
+
+  <h3>
+    <a id="ps-1-pointer" href="https://codereview.chromium.org/472853003/#ps1" onclick="M_toggleSectionForPS(&#39;472853003&#39;, &#39;1&#39;)" class="toggled-section ">
+      Patch Set 1
+      
+      <span class="anchor">#</span>
+    </a>
+    
+      <a class="editpatchset" onclick="M_editPatchsetTitle(
+          &#39;472853003&#39;, &#39;1&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;,
+          &#39;&#39;,
+          &#39;1&#39;)">(edit)</a>
+    
+  </h3>
+
+  
+    <div>
+      <i>Total comments:</i> 2
+      
+    </div>
+  
+
+  <div id="ps-1" style="display:none">
+  
+  </div>
+  
+
+  <h3>
+    <a id="ps-20001-pointer" href="https://codereview.chromium.org/472853003/#ps20001" onclick="M_toggleSectionForPS(&#39;472853003&#39;, &#39;20001&#39;)" class="toggled-section ">
+      Patch Set 2
+      : Added tests (manual &amp; unit), check for steps timing function.
+      <span class="anchor">#</span>
+    </a>
+    
+      <a class="editpatchset" onclick="M_editPatchsetTitle(
+          &#39;472853003&#39;, &#39;20001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;,
+          &#39;Added tests (manual \u0026 unit), check for steps timing function.&#39;,
+          &#39;2&#39;)">(edit)</a>
+    
+  </h3>
+
+  
+
+  <div id="ps-20001" style="display:none">
+  
+  </div>
+  
+
+  <h3>
+    <a id="ps-40001-pointer" href="https://codereview.chromium.org/472853003/#ps40001" onclick="M_toggleSectionForPS(&#39;472853003&#39;, &#39;40001&#39;)" class="toggled-section ">
+      Patch Set 3
+      : Updated unit tests.
+      <span class="anchor">#</span>
+    </a>
+    
+      <a class="editpatchset" onclick="M_editPatchsetTitle(
+          &#39;472853003&#39;, &#39;40001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;,
+          &#39;Updated unit tests.&#39;,
+          &#39;3&#39;)">(edit)</a>
+    
+  </h3>
+
+  
+    <div>
+      <i>Total comments:</i> 10
+      
+    </div>
+  
+
+  <div id="ps-40001" style="display:none">
+  
+  </div>
+  
+
+  <h3>
+    <a id="ps-60001-pointer" href="https://codereview.chromium.org/472853003/#ps60001" onclick="M_toggleSectionForPS(&#39;472853003&#39;, &#39;60001&#39;)" class="toggled-section opentriangle">
+      Patch Set 4
+      : Addressed comments.
+      <span class="anchor">#</span>
+    </a>
+    
+      <a class="editpatchset" onclick="M_editPatchsetTitle(
+          &#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;,
+          &#39;Addressed comments.&#39;,
+          &#39;4&#39;)">(edit)</a>
+    
+  </h3>
+
+  
+
+  <div id="ps-60001" style="">
+    
+<div class="issue-list">
+
+  <div class="pagination">
+    <div style="float: left;">
+      <i>Created:</i> 1 month ago
+    </div>
+    <div style="float: right;">
+      
+        Download
+          <a href="https://codereview.chromium.org/download/issue472853003_60001.diff" title="Patchset in text format">[raw]</a>
+          <a href="https://codereview.chromium.org/tarball/472853003/60001" title="Tarball containing the original and patched files">[tar.bz2]</a>
+      
+      
+        
+        <form method="post" action="https://codereview.chromium.org/472853003/patchset/60001/delete">
+          <input type="hidden" name="xsrf_token" value="769f34abef05198ffba2e4b269353647">
+          <input type="hidden" name="_method" value="delete">
+          |
+          <input onclick="return confirm(&#39;Are you sure?&#39;);" type="submit" value="Delete" class="link-to">
+        </form>
+        
+      
+    </div>
+    <div style="clear:both;"></div>
+  </div>
+
+  <table id="queues" style="clear:both;">
+    <tbody><tr align="left">
+      <th colspan="2"></th>
+      <th>Unified diffs</th>
+      <th>Side-by-side diffs</th>
+      <th>Delta from patch set</th>
+      <th colspan="3">Stats <font style="font-weight: normal">(<i>+107 lines, -14 lines</i>)</font></th>
+      <th>Lint</th>
+      <th>Patch</th>
+    </tr>
+
+    
+      <tr name="patch">
+        <td class="first" width="14"><img src="./Code Review_files/closedtriangle.gif" width="12" height="9"></td>
+        <td style="white-space: nowrap">A</td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/patch/60001/70001">
+            ManualTests/animation/compositor-animation-2-keyframe.html
+          </a>
+        </td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/diff/60001/ManualTests/animation/compositor-animation-2-keyframe.html">
+            View
+          </a>
+        </td>
+        <td style="white-space: nowrap">
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/1:60001/ManualTests/animation/compositor-animation-2-keyframe.html" title="Delta from patch set 1">1</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/20001:60001/ManualTests/animation/compositor-animation-2-keyframe.html" title="Delta from patch set 2">2</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/40001:60001/ManualTests/animation/compositor-animation-2-keyframe.html" title="Delta from patch set 3">3</a>
+        
+        </td>
+        
+          <td style="white-space: nowrap">1 chunk</td>
+          <td style="white-space: nowrap">+66 lines, -0 lines</td>
+        
+        <td style="white-space: nowrap">
+          
+            0 comments
+            
+            
+          
+        </td>
+        <td style="white-space: nowrap">
+        
+        <a href="https://codereview.chromium.org/lint_patch/issue472853003_60001_70001" title="Lint results for ManualTests/animation/compositor-animation-2-keyframe.html">
+          ? errors
+        </a>
+        
+        </td>
+        <td>
+          <a href="https://codereview.chromium.org/download/issue472853003_60001_70001.diff" title="Download patch for ManualTests/animation/compositor-animation-2-keyframe.html">
+            Download
+          </a>
+        </td>
+      </tr>
+    
+      <tr name="patch">
+        <td class="first" width="14"><img src="./Code Review_files/closedtriangle.gif" style="visibility: hidden;" width="12" height="9"></td>
+        <td style="white-space: nowrap">M</td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/patch/60001/70002">
+            Source/core/animation/CompositorAnimations.cpp
+          </a>
+        </td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/diff/60001/Source/core/animation/CompositorAnimations.cpp">
+            View
+          </a>
+        </td>
+        <td style="white-space: nowrap">
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/1:60001/Source/core/animation/CompositorAnimations.cpp" title="Delta from patch set 1">1</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/20001:60001/Source/core/animation/CompositorAnimations.cpp" title="Delta from patch set 2">2</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/40001:60001/Source/core/animation/CompositorAnimations.cpp" title="Delta from patch set 3">3</a>
+        
+        </td>
+        
+          <td style="white-space: nowrap">3 chunks</td>
+          <td style="white-space: nowrap">+27 lines, -11 lines</td>
+        
+        <td style="white-space: nowrap">
+          
+            0 comments
+            
+            
+          
+        </td>
+        <td style="white-space: nowrap">
+        
+        <a href="https://codereview.chromium.org/lint_patch/issue472853003_60001_70002" title="Lint results for Source/core/animation/CompositorAnimations.cpp">
+          9 errors
+        </a>
+        
+        </td>
+        <td>
+          <a href="https://codereview.chromium.org/download/issue472853003_60001_70002.diff" title="Download patch for Source/core/animation/CompositorAnimations.cpp">
+            Download
+          </a>
+        </td>
+      </tr>
+    
+      <tr name="patch">
+        <td class="first" width="14"><img src="./Code Review_files/closedtriangle.gif" style="visibility: hidden;" width="12" height="9"></td>
+        <td style="white-space: nowrap">M</td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/patch/60001/70003">
+            Source/core/animation/CompositorAnimationsImpl.h
+          </a>
+        </td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/diff/60001/Source/core/animation/CompositorAnimationsImpl.h">
+            View
+          </a>
+        </td>
+        <td style="white-space: nowrap">
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/1:60001/Source/core/animation/CompositorAnimationsImpl.h" title="Delta from patch set 1">1</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/20001:60001/Source/core/animation/CompositorAnimationsImpl.h" title="Delta from patch set 2">2</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/40001:60001/Source/core/animation/CompositorAnimationsImpl.h" title="Delta from patch set 3">3</a>
+        
+        </td>
+        
+          <td style="white-space: nowrap">1 chunk</td>
+          <td style="white-space: nowrap">+1 line, -1 line</td>
+        
+        <td style="white-space: nowrap">
+          
+            0 comments
+            
+            
+          
+        </td>
+        <td style="white-space: nowrap">
+        
+        <a href="https://codereview.chromium.org/lint_patch/issue472853003_60001_70003" title="Lint results for Source/core/animation/CompositorAnimationsImpl.h">
+          1 errors
+        </a>
+        
+        </td>
+        <td>
+          <a href="https://codereview.chromium.org/download/issue472853003_60001_70003.diff" title="Download patch for Source/core/animation/CompositorAnimationsImpl.h">
+            Download
+          </a>
+        </td>
+      </tr>
+    
+      <tr name="patch">
+        <td class="first" width="14"><img src="./Code Review_files/closedtriangle.gif" style="visibility: hidden;" width="12" height="9"></td>
+        <td style="white-space: nowrap">M</td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/patch/60001/70004">
+            Source/core/animation/CompositorAnimationsTest.cpp
+          </a>
+        </td>
+        <td>
+          <a class="noul" href="https://codereview.chromium.org/472853003/diff/60001/Source/core/animation/CompositorAnimationsTest.cpp">
+            View
+          </a>
+        </td>
+        <td style="white-space: nowrap">
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/1:60001/Source/core/animation/CompositorAnimationsTest.cpp" title="Delta from patch set 1">1</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/20001:60001/Source/core/animation/CompositorAnimationsTest.cpp" title="Delta from patch set 2">2</a>
+        
+          <a href="https://codereview.chromium.org/472853003/diff2/40001:60001/Source/core/animation/CompositorAnimationsTest.cpp" title="Delta from patch set 3">3</a>
+        
+        </td>
+        
+          <td style="white-space: nowrap">2 chunks</td>
+          <td style="white-space: nowrap">+13 lines, -2 lines</td>
+        
+        <td style="white-space: nowrap">
+          
+            0 comments
+            
+            
+          
+        </td>
+        <td style="white-space: nowrap">
+        
+        <a href="https://codereview.chromium.org/lint_patch/issue472853003_60001_70004" title="Lint results for Source/core/animation/CompositorAnimationsTest.cpp">
+          7 errors
+        </a>
+        
+        </td>
+        <td>
+          <a href="https://codereview.chromium.org/download/issue472853003_60001_70004.diff" title="Download patch for Source/core/animation/CompositorAnimationsTest.cpp">
+            Download
+          </a>
+        </td>
+      </tr>
+    
+
+  </tbody></table>
+  <div id="tryjobdiv-60001" style="background: transparent; margin: 4px 0px">
+      <span><i>Trybot&nbsp;results:</i></span>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/linux_blink_dbg/builds/22625" title="success 22625" status="success" style="display: inline;" target="_blank">
+           &nbsp;linux_blink_dbg&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/win_gpu_triggered_tests/builds/43519" title="success 43519" status="success" style="display: inline;" target="_blank">
+           &nbsp;win_gpu_triggered_tests&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/win_blink_rel/builds/24176" title="success 24176" status="success" style="display: inline;" target="_blank">
+           &nbsp;win_blink_rel&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/mac_blink_rel/builds/20988" title="success 20988" status="success" style="display: inline;" target="_blank">
+           &nbsp;mac_blink_rel&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/mac_gpu_triggered_tests/builds/39000" title="success 39000" status="success" style="display: inline;" target="_blank">
+           &nbsp;mac_gpu_triggered_tests&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/linux_gpu_triggered_tests/builds/49025" title="success 49025" status="success" style="display: inline;" target="_blank">
+           &nbsp;linux_gpu_triggered_tests&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/linux_blink_rel/builds/22049" title="success 22049" status="success" style="display: inline;" target="_blank">
+           &nbsp;linux_blink_rel&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/mac_gpu_retina_triggered_tests/builds/38954" title="success 38954" status="success" style="display: inline;" target="_blank">
+           &nbsp;mac_gpu_retina_triggered_tests&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/win_blink_compile_dbg/builds/17619" title="success 17619" status="success" style="display: inline;" target="_blank">
+           &nbsp;win_blink_compile_dbg&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/win_gpu/builds/50903" title="success 50903" status="success" style="display: inline;" target="_blank">
+           &nbsp;win_gpu&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/linux_gpu/builds/56817" title="success 56817" status="success" style="display: inline;" target="_blank">
+           &nbsp;linux_gpu&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/linux_chromium_gn_rel/builds/8462" title="success 8462" status="success" style="display: inline;" target="_blank">
+           &nbsp;linux_chromium_gn_rel&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.chromium.gpu/builders/mac_gpu/builds/45703" title="success 45703" status="success" style="display: inline;" target="_blank">
+           &nbsp;mac_gpu&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/android_blink_compile_dbg/builds/10653" title="success 10653" status="success" style="display: inline;" target="_blank">
+           &nbsp;android_blink_compile_dbg&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/android_blink_compile_rel/builds/10668" title="success 10668" status="success" style="display: inline;" target="_blank">
+           &nbsp;android_blink_compile_rel&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/mac_blink_compile_dbg/builds/17270" title="success 17270" status="success" style="display: inline;" target="_blank">
+           &nbsp;mac_blink_compile_dbg&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/blink_presubmit/builds/13618" title="success 13618" status="success" style="display: inline;" target="_blank">
+           &nbsp;blink_presubmit&nbsp;</a>
+      
+        <a class="build-result build-status-color-success" href="http://build.chromium.org/p/tryserver.blink/builders/android_chromium_gn_compile_rel/builds/8525" title="success 8525" status="success" style="display: inline;" target="_blank">
+           &nbsp;android_chromium_gn_compile_rel&nbsp;</a>
+      
+      <a id="tryjobdiv-60001-morelink" style="display: none;" href="https://codereview.chromium.org/472853003/#" onclick="M_showTryJobResult(&#39;tryjobdiv-60001&#39;, true); return false">
+         More&gt;&gt;&gt;</a>
+      <a id="tryjobdiv-60001-lesslink" style="display: none;" href="https://codereview.chromium.org/472853003/#" onclick="M_showTryJobResult(&#39;tryjobdiv-60001&#39;, false); return false">
+         &lt;&lt;&lt;Less</a>
+
+      
+  </div>
+
+  
+    <form id="commitform" name="commitform" method="post">
+      <input type="hidden" name="xsrf_token" value="769f34abef05198ffba2e4b269353647">
+      <input type="hidden" name="last_patchset" value="60001">
+      Commit: <input type="checkbox" id="commit" name="commit" disabled="" onchange="M_editFlags(&#39;472853003&#39;)">
+    </form>
+
+    
+      <br>
+      <form action="https://codereview.chromium.org/api/472853003/60001/revert" method="post" enctype="multipart/form-data" id="revert-form" onsubmit="return M_createRevertPatchset(); return false;">
+        <input type="hidden" name="xsrf_token" value="769f34abef05198ffba2e4b269353647">
+        <input type="hidden" name="revert_reason" value="">
+        <input type="hidden" name="revert_cq" value="">
+        <input type="button" value="Revert Patchset" onclick="M_toggleRevertReasonPopup(true);">
+        <div id="revert-reason-popup-div" style="background: transparent; margin: 4px 0px; display: none;">
+          Enter the reason for reverting this patchset (Please be descriptive, include what broke and what needs to be done to reland):<br>
+          <textarea rows="10" cols="50" id="revert_reason_textarea"></textarea><br>
+          Automatically send Revert CL to CQ: <input type="checkbox" id="check_cq" name="check_cq" checked=""><br>
+          <input type="button" value="Cancel" onclick="M_toggleRevertReasonPopup(false);">
+          <input type="submit" value="Submit">
+        </div>
+      </form>
+    
+
+  
+</div>
+
+  
+  </div>
+  
+    <script language="JavaScript" type="text/javascript">
+         <!--
+         var lastPSId = 60001;
+         // -->
+       </script>
+  
+
+
+
+
+  <h3>
+    <a id="messages-pointer" href="javascript:M_toggleSection('messages')" class="toggled-section opentriangle">
+      Messages
+    </a>
+  </h3>
+
+  
+    <div><i>
+    Total messages: 13 (0 generated)
+    </i></div>
+  
+
+  <div id="messages">
+    <div style="margin-bottom: .5em;">
+      <a href="javascript:M_expandAllVisibleComments('cl', 13)">
+        Expand Messages</a>
+      |
+      <a href="javascript:M_collapseAllVisibleComments('cl', 13)">
+        Collapse Messages</a>
+      
+    </div>
+
+    
+      <div class="message    " id="msg1" name="0">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(0)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>dstockwell</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-0">
+                          We'll need a manual test for this, see: ManualTests/animation/compositor-animation-delay.html
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month, 1 week ago
+		(2014-08-15 01:22:06 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg1">#1</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-0" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-0">We'll need a manual test for this, see:
+ManualTests/animation/compositor-animation-delay.html</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('0', '2014/08/15 01:22:06', 'dstockwell', '5668600916475904')" id="message-reply-href-0">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-0" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg2" name="1">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(1)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>shans</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-1">
+                          Looks great so far. Next step is to add some unit tests. https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp File Source/core/animation/CompositorAnimations.cpp ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month, 1 week ago
+		(2014-08-15 07:54:16 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg2">#2</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-1" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-1">Looks great so far. Next step is to add some unit tests.
+
+<a href="https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/1/Source/core/animation/Compos...</a>
+File Source/core/animation/CompositorAnimations.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp#newcode238" rel="nofollow">https://codereview.chromium.org/472853003/diff/1/Source/core/animation/Compos...</a>
+Source/core/animation/CompositorAnimations.cpp:238: if (keyframes.size() == 2 &amp;&amp;
+keyframes[0]-&gt;easing()-&gt;type() == TimingFunction::LinearFunction)
+I think you're right here (easing()-&gt;type() will always be LinearFunction, never
+null), but could you ASSERT to make sure?</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('1', '2014/08/15 07:54:16', 'shans', '5649050225344512')" id="message-reply-href-1">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-1" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg3" name="2">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(2)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>me</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-2">
+                          Added manual &amp; updated unit tests. https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp File Source/core/animation/CompositorAnimations.cpp (right): https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp#newcode238 Source/core/animation/CompositorAnimations.cpp:238: if (keyframes.size() == ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month, 1 week ago
+		(2014-08-19 04:27:13 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg3">#3</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-2" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-2">Added manual &amp; updated unit tests.
+
+<a href="https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/1/Source/core/animation/Compos...</a>
+File Source/core/animation/CompositorAnimations.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/1/Source/core/animation/CompositorAnimations.cpp#newcode238" rel="nofollow">https://codereview.chromium.org/472853003/diff/1/Source/core/animation/Compos...</a>
+Source/core/animation/CompositorAnimations.cpp:238: if (keyframes.size() == 2 &amp;&amp;
+keyframes[0]-&gt;easing()-&gt;type() == TimingFunction::LinearFunction)
+On 2014/08/15 07:54:16, shans wrote:
+&gt; I think you're right here (easing()-&gt;type() will always be LinearFunction,
+never
+&gt; null), but could you ASSERT to make sure?
+
+Done? (bear with my simplistic understanding of cpp) easing()-&gt;type() is an enum
+so an ASSERT would fail for LinearFunction?
+I.e. ASSERT(keyframe[0]-&gt;easing()-&gt;type());
+
+Added ASSERT on easing object.
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimations.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp#newcode237" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimations.cpp:237: const KeyframeVector&amp;
+keyframes = keyframeEffect.getFrames();
+Is this okay that it's:
+
+keyframeEffect.getFrames() (instead of a property specific keyframe?)</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('2', '2014/08/19 04:27:13', 'ikilpatrick', '5676830073815040')" id="message-reply-href-2">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-2" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg4" name="3">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(3)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>shans</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-3">
+                          https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html File ManualTests/animation/compositor-animation-2-keyframe.html (right): https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode38 ManualTests/animation/compositor-animation-2-keyframe.html:38: {duration: 2000, easing: 'ease-in'}); Can you add a box ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-21 05:46:10 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg4">#4</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-3" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-3"><a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+File ManualTests/animation/compositor-animation-2-keyframe.html (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode38" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+ManualTests/animation/compositor-animation-2-keyframe.html:38: {duration: 2000,
+easing: 'ease-in'});
+Can you add a box that sets easing on the keyframe directly too? It should be
+identical to this one (i.e. look and start the same, run on the compositor).
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode42" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+ManualTests/animation/compositor-animation-2-keyframe.html:42:
+document.getElementsByClassName('test1 anim-left')[0].animate(
+are you allowed to getElementsByClassName with a list of names like this?
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimations.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp#newcode237" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimations.cpp:237: const KeyframeVector&amp;
+keyframes = keyframeEffect.getFrames();
+On 2014/08/19 04:27:13, ikilpatrick wrote:
+&gt; Is this okay that it's:
+&gt; 
+&gt; keyframeEffect.getFrames() (instead of a property specific keyframe?)
+
+I think so, but please add a comment.
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimationsTest.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp#newcode500" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimationsTest.cpp:500: 
+Add a test demonstrating that global easings with &gt; 2 keyframes are not
+candidates for animation on the compositor.</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('3', '2014/08/21 05:46:10', 'shans', '5733935958982656')" id="message-reply-href-3">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-3" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg5" name="4">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(4)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>me</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-4">
+                          https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html File ManualTests/animation/compositor-animation-2-keyframe.html (right): https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode38 ManualTests/animation/compositor-animation-2-keyframe.html:38: {duration: 2000, easing: 'ease-in'}); On 2014/08/21 05:46:10, shans wrote: ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-21 06:57:19 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg5">#5</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-4" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-4"><a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+File ManualTests/animation/compositor-animation-2-keyframe.html (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode38" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+ManualTests/animation/compositor-animation-2-keyframe.html:38: {duration: 2000,
+easing: 'ease-in'});
+On 2014/08/21 05:46:10, shans wrote:
+&gt; Can you add a box that sets easing on the keyframe directly too? It should be
+&gt; identical to this one (i.e. look and start the same, run on the compositor).
+
+Done.
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/compositor-animation-2-keyframe.html#newcode42" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/ManualTests/animation/co...</a>
+ManualTests/animation/compositor-animation-2-keyframe.html:42:
+document.getElementsByClassName('test1 anim-left')[0].animate(
+On 2014/08/21 05:46:10, shans wrote:
+&gt; are you allowed to getElementsByClassName with a list of names like this?
+
+Yup, little known fact.
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/document.getElementsByClassName" rel="nofollow">https://developer.mozilla.org/en-US/docs/Web/API/document.getElementsByClassName</a>
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimations.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimations.cpp#newcode237" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimations.cpp:237: const KeyframeVector&amp;
+keyframes = keyframeEffect.getFrames();
+On 2014/08/21 05:46:10, shans wrote:
+&gt; On 2014/08/19 04:27:13, ikilpatrick wrote:
+&gt; &gt; Is this okay that it's:
+&gt; &gt; 
+&gt; &gt; keyframeEffect.getFrames() (instead of a property specific keyframe?)
+&gt; 
+&gt; I think so, but please add a comment.
+
+Done.
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimationsTest.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp#newcode500" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimationsTest.cpp:500: 
+On 2014/08/21 05:46:10, shans wrote:
+&gt; Add a test demonstrating that global easings with &gt; 2 keyframes are not
+&gt; candidates for animation on the compositor.
+
+Already part of "isCandidateForAnimationOnCompositorTimingFunctionCubic" or
+would you like an explicit one?</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('4', '2014/08/21 06:57:19', 'ikilpatrick', '5689792285114368')" id="message-reply-href-4">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-4" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message  approval  " id="msg6" name="5">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(5)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>shans</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-5">
+                          lgtm. I think you'll still need an owner's review (e.g. dstockwell) to land this. https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-22 11:40:49 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg6">#6</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-5" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-5">lgtm. I think you'll still need an owner's review (e.g. dstockwell) to land
+this.
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+File Source/core/animation/CompositorAnimationsTest.cpp (right):
+
+<a href="https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/CompositorAnimationsTest.cpp#newcode500" rel="nofollow">https://codereview.chromium.org/472853003/diff/40001/Source/core/animation/Co...</a>
+Source/core/animation/CompositorAnimationsTest.cpp:500: 
+On 2014/08/21 06:57:19, ikilpatrick wrote:
+&gt; On 2014/08/21 05:46:10, shans wrote:
+&gt; &gt; Add a test demonstrating that global easings with &gt; 2 keyframes are not
+&gt; &gt; candidates for animation on the compositor.
+&gt; 
+&gt; Already part of "isCandidateForAnimationOnCompositorTimingFunctionCubic" or
+&gt; would you like an explicit one?
+
+Nah that's probably enough.</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('5', '2014/08/22 11:40:49', 'shans', '5754903989321728')" id="message-reply-href-5">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-5" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg7" name="6">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(6)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>Timothy Loh</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-6">
+                          fyi you have a typo in the title/description (liear instead of linear)
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-24 23:54:09 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg7">#7</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-6" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-6">fyi you have a typo in the title/description (liear instead of linear)</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('6', '2014/08/24 23:54:09', 'Timothy Loh', '5643440998055936')" id="message-reply-href-6">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-6" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg8" name="7">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(7)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>me</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-7">
+                          On 2014/08/24 23:54:09, Timothy Loh wrote: &gt; fyi you have a typo in the title/description ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 00:00:22 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg8">#8</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-7" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-7">On 2014/08/24 23:54:09, Timothy Loh wrote:
+&gt; fyi you have a typo in the title/description (liear instead of linear)
+
+sorted thanks, also couldn't spell animation.</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('7', '2014/08/25 00:00:22', 'ikilpatrick', '5709068098338816')" id="message-reply-href-7">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-7" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg9" name="8">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(8)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>dstockwell</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-8">
+                          On 2014/08/25 00:00:22, ikilpatrick wrote: &gt; On 2014/08/24 23:54:09, Timothy Loh wrote: &gt; &gt; fyi ...
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 00:15:44 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg9">#9</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-8" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-8">On 2014/08/25 00:00:22, ikilpatrick wrote:
+&gt; On 2014/08/24 23:54:09, Timothy Loh wrote:
+&gt; &gt; fyi you have a typo in the title/description (liear instead of linear)
+&gt; 
+&gt; sorted thanks, also couldn't spell animation.
+
+We also usually prefix these changes with "Web Animations: "</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('8', '2014/08/25 00:15:44', 'dstockwell', '5681717746597888')" id="message-reply-href-8">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-8" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message  approval  " id="msg10" name="9">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(9)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>dstockwell</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-9">
+                          lgtm
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 00:16:00 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg10">#10</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-9" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-9">lgtm</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('9', '2014/08/25 00:16:00', 'dstockwell', '5747976207073280')" id="message-reply-href-9">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-9" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg11" name="10">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(10)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>me</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-10">
+                          The CQ bit was checked by ikilpatrick@chromium.org
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 04:41:59 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg11">#11</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-10" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-10">The CQ bit was checked by <a href="mailto:ikilpatrick@chromium.org">ikilpatrick@chromium.org</a></pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('10', '2014/08/25 04:41:59', 'ikilpatrick', '5661458385862656')" id="message-reply-href-10">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-10" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message    " id="msg12" name="11">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(11)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>I haz the power (commit-bot)</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden;" class="extra" id="cl-preview-11">
+                          CQ is trying da patch. Follow status at https://chromium-status.appspot.com/cq/ikilpatrick@chromium.org/472853003/60001
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 04:42:41 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg12">#12</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-11" style="display: none;">
+          <div class="message-body">
+            
+            <pre name="cl-message-11">CQ is trying da patch. Follow status at
+ <a href="https://chromium-status.appspot.com/cq/ikilpatrick@chromium.org/472853003/60001" rel="nofollow">https://chromium-status.appspot.com/cq/ikilpatrick@chromium.org/472853003/60001</a></pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('11', '2014/08/25 04:42:41', 'I haz the power (commit-bot)', '5728116278296576')" id="message-reply-href-11">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-11" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+      <div class="message issue_was_closed   " id="msg13" name="12">
+        <div class="header">
+          <table border="0" width="100%" cellspacing="0" cellpadding="0">
+            <tbody><tr class="comment_title" onclick="M_switchChangelistComment(12)">
+              <td style="padding-left: 5px; white-space: nowrap;">
+                <b>I haz the power (commit-bot)</b>
+              </td>
+              <td width="100%" style="overflow:hidden;">
+                <table style="table-layout:fixed; white-space: nowrap;" width="100%">
+                  <tbody><tr>
+                    <td>
+                      <span style="white-space: nowrap; overflow: hidden; display: none;" class="extra" id="cl-preview-12">
+                          Committed patchset #4 (60001) as 180842
+                      </span>
+                    </td>
+                  </tr>
+                </tbody></table>
+              </td>
+              <td align="right" style="white-space: nowrap; padding-right: 5px; padding-left: 3px;">
+                1 month ago
+		(2014-08-25 05:40:48 UTC)
+                <a href="https://codereview.chromium.org/472853003/#msg13">#13</a>
+              </td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <div id="cl-comment-12">
+          <div class="message-body">
+            
+              <span class="extra-note">
+                Message was sent while issue was closed.
+              </span>
+            
+            <pre name="cl-message-12">Committed patchset #4 (60001) as 180842</pre>
+          </div>
+          <div class="message-actions">
+            
+              <a href="javascript:M_replyToMessage('12', '2014/08/25 05:40:48', 'I haz the power (commit-bot)', '5651442522128384')" id="message-reply-href-12">Reply</a>
+              <textarea rows="20" name="message" style="display:none; width:99%"></textarea>
+              <div id="message-reply-12" style="display:none;"></div>
+            
+          </div>
+        </div>
+
+      </div>
+    
+
+    <div>
+      <a href="javascript:M_expandAllVisibleComments('cl', 13)">
+        Expand Messages</a>
+      |
+      <a href="javascript:M_collapseAllVisibleComments('cl', 13)">
+        Collapse Messages</a>
+      
+    </div>
+
+  </div>
+
+
+
+<script language="JavaScript" type="text/javascript">
+  <!--
+    document.onkeydown = M_changelistKeyDown;
+    document.onmousedown = M_changelistMouseDown;
+    var dashboardState = new M_DashboardState(window, 'patch', 'M_CLPatchMarker');
+    var issueId = 472853003;
+    M_toggleIssueOverviewByAnchor();
+    M_showTryJobResult('tryjobdiv-60001', false);
+  // -->
+</script>
+
+
+
+  <div style="display:none;">
+    <form method="POST" action="https://codereview.chromium.org/472853003/publish" id="message-reply-form">
+      <input type="hidden" name="xsrf_token" value="769f34abef05198ffba2e4b269353647">
+      <div></div>
+      <input type="hidden" name="in_reply_to" value="">
+      <input type="hidden" name="subject" value="Run 2-keyframe animations with non-liear timing on the compositor.">
+      <input type="hidden" name="message_only" value="1">
+      <input type="submit" value="Send Message">
+      <input type="button" value="Discard" name="discard">
+      <input type="checkbox" name="send_mail" value="1" id="message-reply-send-mail" checked="checked">
+      <label for="message-reply-send-mail">Send mail to reviewers</label>
+      <input type="hidden" name="add_as_reviewer" value="0">
+      <input type="checkbox" name="add_as_reviewer" value="1" id="message-reply-add-as-reviewer">
+        <label for="message-reply-add-as-reviewer">
+          Add yourself as a reviewer</label>
+    </form>
+  </div>
+  <a id="resizer" class="resizer" style="display:none;cursor:pointer">
+    <img src="./Code Review_files/zippyplus.gif">
+  </a>
+
+  <!-- Popup display to add and remove trybots from last patchset -->
+  <div id="trybot-popup" style="display:none;">
+    <form method="POST" action="" id="trybotform">
+      <input type="hidden" name="xsrf_token" value="769f34abef05198ffba2e4b269353647">
+        <div id="trybot-popup-checkboxes">
+        
+          
+            <div class="trybot-popup-checkboxes-with-categories">
+            <b>client.skia</b><br>
+            <a></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('client.skia-Build-builders')" id="client.skia-Build-builders-pointer">Build</a><div id="client.skia-Build-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot" name="client.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot" name="client.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot" name="client.skia:Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Build-Mac10.7-Clang-x86_64-Debug-Trybot" name="client.skia:Build-Mac10.7-Clang-x86_64-Debug-Trybot" type="checkbox">Build-Mac10.7-Clang-x86_64-Debug-Trybot</div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('client.skia-Canary-builders')" id="client.skia-Canary-builders-pointer">Canary</a><div id="client.skia-Canary-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Linux Tests-Trybot" name="client.skia:Linux Tests-Trybot" type="checkbox">Linux Tests-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Win Builder-Trybot" name="client.skia:Win Builder-Trybot" type="checkbox">Win Builder-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Linux Builder-Trybot" name="client.skia:Linux Builder-Trybot" type="checkbox">Linux Builder-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Mac Builder-Trybot" name="client.skia:Mac Builder-Trybot" type="checkbox">Mac Builder-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Mac10.7 Tests (1)-Trybot" name="client.skia:Mac10.7 Tests (1)-Trybot" type="checkbox">Mac10.7 Tests (1)-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Win7 Tests (1)-Trybot" name="client.skia:Win7 Tests (1)-Trybot" type="checkbox">Win7 Tests (1)-Trybot</div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('client.skia-Perf-builders')" id="client.skia-Perf-builders-pointer">Perf</a><div id="client.skia-Perf-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Recipes-Trybot" name="client.skia:Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Recipes-Trybot" type="checkbox">Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Recipes-Trybot</div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('client.skia-Test-builders')" id="client.skia-Test-builders-pointer">Test</a><div id="client.skia-Test-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Test-ChromeOS-Link-HD4000-x86_64-Debug-Recipes-Trybot" name="client.skia:Test-ChromeOS-Link-HD4000-x86_64-Debug-Recipes-Trybot" type="checkbox">Test-ChromeOS-Link-HD4000-x86_64-Debug-Recipes-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Test-Android-Nexus10-MaliT604-Arm7-Release-Recipes-Trybot" name="client.skia:Test-Android-Nexus10-MaliT604-Arm7-Release-Recipes-Trybot" type="checkbox">Test-Android-Nexus10-MaliT604-Arm7-Release-Recipes-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_client.skia_Test-Ubuntu13.10-ShuttleA-NoGPU-x86_64-Debug-Recipes-Trybot" name="client.skia:Test-Ubuntu13.10-ShuttleA-NoGPU-x86_64-Debug-Recipes-Trybot" type="checkbox">Test-Ubuntu13.10-ShuttleA-NoGPU-x86_64-Debug-Recipes-Trybot</div><br></div><br>
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.blink</b><br>
+            
+                <input type="checkbox" name="tryserver.blink:android_blink_compile_dbg" id="cb_tryserver.blink_android_blink_compile_dbg">
+                <label for="cb_tryserver.blink_android_blink_compile_dbg">android_blink_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:android_blink_compile_rel" id="cb_tryserver.blink_android_blink_compile_rel">
+                <label for="cb_tryserver.blink_android_blink_compile_rel">android_blink_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:android_chromium_gn_compile_rel" id="cb_tryserver.blink_android_chromium_gn_compile_rel">
+                <label for="cb_tryserver.blink_android_chromium_gn_compile_rel">android_chromium_gn_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:blink_presubmit" id="cb_tryserver.blink_blink_presubmit">
+                <label for="cb_tryserver.blink_blink_presubmit">blink_presubmit</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_compile_dbg" id="cb_tryserver.blink_linux_blink_compile_dbg">
+                <label for="cb_tryserver.blink_linux_blink_compile_dbg">linux_blink_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_compile_rel" id="cb_tryserver.blink_linux_blink_compile_rel">
+                <label for="cb_tryserver.blink_linux_blink_compile_rel">linux_blink_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_dbg" id="cb_tryserver.blink_linux_blink_dbg">
+                <label for="cb_tryserver.blink_linux_blink_dbg">linux_blink_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_oilpan_dbg" id="cb_tryserver.blink_linux_blink_oilpan_dbg">
+                <label for="cb_tryserver.blink_linux_blink_oilpan_dbg">linux_blink_oilpan_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_oilpan_rel" id="cb_tryserver.blink_linux_blink_oilpan_rel">
+                <label for="cb_tryserver.blink_linux_blink_oilpan_rel">linux_blink_oilpan_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_blink_rel" id="cb_tryserver.blink_linux_blink_rel">
+                <label for="cb_tryserver.blink_linux_blink_rel">linux_blink_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:linux_chromium_gn_rel" id="cb_tryserver.blink_linux_chromium_gn_rel">
+                <label for="cb_tryserver.blink_linux_chromium_gn_rel">linux_chromium_gn_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_compile_dbg" id="cb_tryserver.blink_mac_blink_compile_dbg">
+                <label for="cb_tryserver.blink_mac_blink_compile_dbg">mac_blink_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_compile_rel" id="cb_tryserver.blink_mac_blink_compile_rel">
+                <label for="cb_tryserver.blink_mac_blink_compile_rel">mac_blink_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_dbg" id="cb_tryserver.blink_mac_blink_dbg">
+                <label for="cb_tryserver.blink_mac_blink_dbg">mac_blink_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_oilpan_dbg" id="cb_tryserver.blink_mac_blink_oilpan_dbg">
+                <label for="cb_tryserver.blink_mac_blink_oilpan_dbg">mac_blink_oilpan_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_oilpan_rel" id="cb_tryserver.blink_mac_blink_oilpan_rel">
+                <label for="cb_tryserver.blink_mac_blink_oilpan_rel">mac_blink_oilpan_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:mac_blink_rel" id="cb_tryserver.blink_mac_blink_rel">
+                <label for="cb_tryserver.blink_mac_blink_rel">mac_blink_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_compile_dbg" id="cb_tryserver.blink_win_blink_compile_dbg">
+                <label for="cb_tryserver.blink_win_blink_compile_dbg">win_blink_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_compile_rel" id="cb_tryserver.blink_win_blink_compile_rel">
+                <label for="cb_tryserver.blink_win_blink_compile_rel">win_blink_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_dbg" id="cb_tryserver.blink_win_blink_dbg">
+                <label for="cb_tryserver.blink_win_blink_dbg">win_blink_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_oilpan_dbg" id="cb_tryserver.blink_win_blink_oilpan_dbg">
+                <label for="cb_tryserver.blink_win_blink_oilpan_dbg">win_blink_oilpan_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_oilpan_rel" id="cb_tryserver.blink_win_blink_oilpan_rel">
+                <label for="cb_tryserver.blink_win_blink_oilpan_rel">win_blink_oilpan_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.blink:win_blink_rel" id="cb_tryserver.blink_win_blink_rel">
+                <label for="cb_tryserver.blink_win_blink_rel">win_blink_rel</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.chromium.gpu</b><br>
+            
+                <input type="checkbox" name="tryserver.chromium.gpu:linux_gpu" id="cb_tryserver.chromium.gpu_linux_gpu">
+                <label for="cb_tryserver.chromium.gpu_linux_gpu">linux_gpu</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.gpu:mac_gpu" id="cb_tryserver.chromium.gpu_mac_gpu">
+                <label for="cb_tryserver.chromium.gpu_mac_gpu">mac_gpu</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.gpu:win_gpu" id="cb_tryserver.chromium.gpu_win_gpu">
+                <label for="cb_tryserver.chromium.gpu_win_gpu">win_gpu</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.chromium.linux</b><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_aosp" id="cb_tryserver.chromium.linux_android_aosp">
+                <label for="cb_tryserver.chromium.linux_android_aosp">android_aosp</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_arm64_dbg_recipe" id="cb_tryserver.chromium.linux_android_arm64_dbg_recipe">
+                <label for="cb_tryserver.chromium.linux_android_arm64_dbg_recipe">android_arm64_dbg_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_chromium_gn_compile_dbg" id="cb_tryserver.chromium.linux_android_chromium_gn_compile_dbg">
+                <label for="cb_tryserver.chromium.linux_android_chromium_gn_compile_dbg">android_chromium_gn_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_chromium_gn_compile_dbg_recipe" id="cb_tryserver.chromium.linux_android_chromium_gn_compile_dbg_recipe">
+                <label for="cb_tryserver.chromium.linux_android_chromium_gn_compile_dbg_recipe">android_chromium_gn_compile_dbg_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_chromium_gn_compile_rel" id="cb_tryserver.chromium.linux_android_chromium_gn_compile_rel">
+                <label for="cb_tryserver.chromium.linux_android_chromium_gn_compile_rel">android_chromium_gn_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_chromium_gn_compile_rel_recipe" id="cb_tryserver.chromium.linux_android_chromium_gn_compile_rel_recipe">
+                <label for="cb_tryserver.chromium.linux_android_chromium_gn_compile_rel_recipe">android_chromium_gn_compile_rel_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_clang_dbg" id="cb_tryserver.chromium.linux_android_clang_dbg">
+                <label for="cb_tryserver.chromium.linux_android_clang_dbg">android_clang_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_clang_dbg_recipe" id="cb_tryserver.chromium.linux_android_clang_dbg_recipe">
+                <label for="cb_tryserver.chromium.linux_android_clang_dbg_recipe">android_clang_dbg_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_dbg" id="cb_tryserver.chromium.linux_android_dbg">
+                <label for="cb_tryserver.chromium.linux_android_dbg">android_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_dbg_tests_recipe" id="cb_tryserver.chromium.linux_android_dbg_tests_recipe">
+                <label for="cb_tryserver.chromium.linux_android_dbg_tests_recipe">android_dbg_tests_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_fyi_dbg" id="cb_tryserver.chromium.linux_android_fyi_dbg">
+                <label for="cb_tryserver.chromium.linux_android_fyi_dbg">android_fyi_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_fyi_dbg_tests_recipe" id="cb_tryserver.chromium.linux_android_fyi_dbg_tests_recipe">
+                <label for="cb_tryserver.chromium.linux_android_fyi_dbg_tests_recipe">android_fyi_dbg_tests_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_rel" id="cb_tryserver.chromium.linux_android_rel">
+                <label for="cb_tryserver.chromium.linux_android_rel">android_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_rel_tests_recipe" id="cb_tryserver.chromium.linux_android_rel_tests_recipe">
+                <label for="cb_tryserver.chromium.linux_android_rel_tests_recipe">android_rel_tests_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_x86_dbg" id="cb_tryserver.chromium.linux_android_x86_dbg">
+                <label for="cb_tryserver.chromium.linux_android_x86_dbg">android_x86_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:android_x86_dbg_recipe" id="cb_tryserver.chromium.linux_android_x86_dbg_recipe">
+                <label for="cb_tryserver.chromium.linux_android_x86_dbg_recipe">android_x86_dbg_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:blink_android_compile_dbg" id="cb_tryserver.chromium.linux_blink_android_compile_dbg">
+                <label for="cb_tryserver.chromium.linux_blink_android_compile_dbg">blink_android_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:blink_android_compile_dbg_recipe" id="cb_tryserver.chromium.linux_blink_android_compile_dbg_recipe">
+                <label for="cb_tryserver.chromium.linux_blink_android_compile_dbg_recipe">blink_android_compile_dbg_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:blink_android_compile_rel" id="cb_tryserver.chromium.linux_blink_android_compile_rel">
+                <label for="cb_tryserver.chromium.linux_blink_android_compile_rel">blink_android_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:blink_android_compile_rel_recipe" id="cb_tryserver.chromium.linux_blink_android_compile_rel_recipe">
+                <label for="cb_tryserver.chromium.linux_blink_android_compile_rel_recipe">blink_android_compile_rel_recipe</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:blink_presubmit" id="cb_tryserver.chromium.linux_blink_presubmit">
+                <label for="cb_tryserver.chromium.linux_blink_presubmit">blink_presubmit</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:chromium_presubmit" id="cb_tryserver.chromium.linux_chromium_presubmit">
+                <label for="cb_tryserver.chromium.linux_chromium_presubmit">chromium_presubmit</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:infra_tester" id="cb_tryserver.chromium.linux_infra_tester">
+                <label for="cb_tryserver.chromium.linux_infra_tester">infra_tester</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_arm_cross_compile" id="cb_tryserver.chromium.linux_linux_arm_cross_compile">
+                <label for="cb_tryserver.chromium.linux_linux_arm_cross_compile">linux_arm_cross_compile</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_arm_tester" id="cb_tryserver.chromium.linux_linux_arm_tester">
+                <label for="cb_tryserver.chromium.linux_linux_arm_tester">linux_arm_tester</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_asan" id="cb_tryserver.chromium.linux_linux_asan">
+                <label for="cb_tryserver.chromium.linux_linux_asan">linux_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_browser_asan" id="cb_tryserver.chromium.linux_linux_browser_asan">
+                <label for="cb_tryserver.chromium.linux_linux_browser_asan">linux_browser_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromeos_asan" id="cb_tryserver.chromium.linux_linux_chromeos_asan">
+                <label for="cb_tryserver.chromium.linux_linux_chromeos_asan">linux_chromeos_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromeos_browser_asan" id="cb_tryserver.chromium.linux_linux_chromeos_browser_asan">
+                <label for="cb_tryserver.chromium.linux_linux_chromeos_browser_asan">linux_chromeos_browser_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromeos_valgrind" id="cb_tryserver.chromium.linux_linux_chromeos_valgrind">
+                <label for="cb_tryserver.chromium.linux_linux_chromeos_valgrind">linux_chromeos_valgrind</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_asan_rel" id="cb_tryserver.chromium.linux_linux_chromium_asan_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_asan_rel">linux_chromium_asan_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_browser_asan_rel" id="cb_tryserver.chromium.linux_linux_chromium_browser_asan_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_browser_asan_rel">linux_chromium_browser_asan_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_clang_dbg" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_clang_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_clang_dbg">linux_chromium_chromeos_clang_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_clang_rel" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_clang_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_clang_rel">linux_chromium_chromeos_clang_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_dbg" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_dbg">linux_chromium_chromeos_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_ozone_dbg" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_ozone_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_ozone_dbg">linux_chromium_chromeos_ozone_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_ozone_rel" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_ozone_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_ozone_rel">linux_chromium_chromeos_ozone_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_rel" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_rel">linux_chromium_chromeos_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_chromeos_rel_swarming" id="cb_tryserver.chromium.linux_linux_chromium_chromeos_rel_swarming">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_chromeos_rel_swarming">linux_chromium_chromeos_rel_swarming</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_clang_dbg" id="cb_tryserver.chromium.linux_linux_chromium_clang_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_clang_dbg">linux_chromium_clang_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_clang_rel" id="cb_tryserver.chromium.linux_linux_chromium_clang_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_clang_rel">linux_chromium_clang_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_compile_dbg" id="cb_tryserver.chromium.linux_linux_chromium_compile_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_compile_dbg">linux_chromium_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_compile_dbg_32" id="cb_tryserver.chromium.linux_linux_chromium_compile_dbg_32">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_compile_dbg_32">linux_chromium_compile_dbg_32</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_compile_rel" id="cb_tryserver.chromium.linux_linux_chromium_compile_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_compile_rel">linux_chromium_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_dbg" id="cb_tryserver.chromium.linux_linux_chromium_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_dbg">linux_chromium_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_gn_dbg" id="cb_tryserver.chromium.linux_linux_chromium_gn_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_gn_dbg">linux_chromium_gn_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_gn_rel" id="cb_tryserver.chromium.linux_linux_chromium_gn_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_gn_rel">linux_chromium_gn_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_rel" id="cb_tryserver.chromium.linux_linux_chromium_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_rel">linux_chromium_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_rel_swarming" id="cb_tryserver.chromium.linux_linux_chromium_rel_swarming">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_rel_swarming">linux_chromium_rel_swarming</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_trusty32_dbg" id="cb_tryserver.chromium.linux_linux_chromium_trusty32_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_trusty32_dbg">linux_chromium_trusty32_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_trusty32_rel" id="cb_tryserver.chromium.linux_linux_chromium_trusty32_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_trusty32_rel">linux_chromium_trusty32_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_trusty_dbg" id="cb_tryserver.chromium.linux_linux_chromium_trusty_dbg">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_trusty_dbg">linux_chromium_trusty_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_chromium_trusty_rel" id="cb_tryserver.chromium.linux_linux_chromium_trusty_rel">
+                <label for="cb_tryserver.chromium.linux_linux_chromium_trusty_rel">linux_chromium_trusty_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_clang_tsan" id="cb_tryserver.chromium.linux_linux_clang_tsan">
+                <label for="cb_tryserver.chromium.linux_linux_clang_tsan">linux_clang_tsan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_ecs_ozone" id="cb_tryserver.chromium.linux_linux_ecs_ozone">
+                <label for="cb_tryserver.chromium.linux_linux_ecs_ozone">linux_ecs_ozone</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_layout" id="cb_tryserver.chromium.linux_linux_layout">
+                <label for="cb_tryserver.chromium.linux_linux_layout">linux_layout</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_layout_asan" id="cb_tryserver.chromium.linux_linux_layout_asan">
+                <label for="cb_tryserver.chromium.linux_linux_layout_asan">linux_layout_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_layout_rel" id="cb_tryserver.chromium.linux_linux_layout_rel">
+                <label for="cb_tryserver.chromium.linux_linux_layout_rel">linux_layout_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_layout_rel_32" id="cb_tryserver.chromium.linux_linux_layout_rel_32">
+                <label for="cb_tryserver.chromium.linux_linux_layout_rel_32">linux_layout_rel_32</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_nacl_sdk" id="cb_tryserver.chromium.linux_linux_nacl_sdk">
+                <label for="cb_tryserver.chromium.linux_linux_nacl_sdk">linux_nacl_sdk</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_nacl_sdk_bionic" id="cb_tryserver.chromium.linux_linux_nacl_sdk_bionic">
+                <label for="cb_tryserver.chromium.linux_linux_nacl_sdk_bionic">linux_nacl_sdk_bionic</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_nacl_sdk_bionic_build" id="cb_tryserver.chromium.linux_linux_nacl_sdk_bionic_build">
+                <label for="cb_tryserver.chromium.linux_linux_nacl_sdk_bionic_build">linux_nacl_sdk_bionic_build</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_nacl_sdk_build" id="cb_tryserver.chromium.linux_linux_nacl_sdk_build">
+                <label for="cb_tryserver.chromium.linux_linux_nacl_sdk_build">linux_nacl_sdk_build</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_redux" id="cb_tryserver.chromium.linux_linux_redux">
+                <label for="cb_tryserver.chromium.linux_linux_redux">linux_redux</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_rel_naclmore" id="cb_tryserver.chromium.linux_linux_rel_naclmore">
+                <label for="cb_tryserver.chromium.linux_linux_rel_naclmore">linux_rel_naclmore</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_rel_precise32" id="cb_tryserver.chromium.linux_linux_rel_precise32">
+                <label for="cb_tryserver.chromium.linux_linux_rel_precise32">linux_rel_precise32</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:linux_valgrind" id="cb_tryserver.chromium.linux_linux_valgrind">
+                <label for="cb_tryserver.chromium.linux_linux_valgrind">linux_valgrind</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.linux:tools_build_presubmit" id="cb_tryserver.chromium.linux_tools_build_presubmit">
+                <label for="cb_tryserver.chromium.linux_tools_build_presubmit">tools_build_presubmit</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.chromium.mac</b><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:ios_dbg_simulator" id="cb_tryserver.chromium.mac_ios_dbg_simulator">
+                <label for="cb_tryserver.chromium.mac_ios_dbg_simulator">ios_dbg_simulator</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:ios_rel_device" id="cb_tryserver.chromium.mac_ios_rel_device">
+                <label for="cb_tryserver.chromium.mac_ios_rel_device">ios_rel_device</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:ios_rel_device_ninja" id="cb_tryserver.chromium.mac_ios_rel_device_ninja">
+                <label for="cb_tryserver.chromium.mac_ios_rel_device_ninja">ios_rel_device_ninja</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_asan" id="cb_tryserver.chromium.mac_mac_asan">
+                <label for="cb_tryserver.chromium.mac_mac_asan">mac_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_asan_64" id="cb_tryserver.chromium.mac_mac_asan_64">
+                <label for="cb_tryserver.chromium.mac_mac_asan_64">mac_asan_64</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_compile_dbg" id="cb_tryserver.chromium.mac_mac_chromium_compile_dbg">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_compile_dbg">mac_chromium_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_compile_rel" id="cb_tryserver.chromium.mac_mac_chromium_compile_rel">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_compile_rel">mac_chromium_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_dbg" id="cb_tryserver.chromium.mac_mac_chromium_dbg">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_dbg">mac_chromium_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_openssl_dbg" id="cb_tryserver.chromium.mac_mac_chromium_openssl_dbg">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_openssl_dbg">mac_chromium_openssl_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_openssl_rel" id="cb_tryserver.chromium.mac_mac_chromium_openssl_rel">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_openssl_rel">mac_chromium_openssl_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_rel" id="cb_tryserver.chromium.mac_mac_chromium_rel">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_rel">mac_chromium_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_chromium_rel_swarming" id="cb_tryserver.chromium.mac_mac_chromium_rel_swarming">
+                <label for="cb_tryserver.chromium.mac_mac_chromium_rel_swarming">mac_chromium_rel_swarming</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_nacl_sdk" id="cb_tryserver.chromium.mac_mac_nacl_sdk">
+                <label for="cb_tryserver.chromium.mac_mac_nacl_sdk">mac_nacl_sdk</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_nacl_sdk_build" id="cb_tryserver.chromium.mac_mac_nacl_sdk_build">
+                <label for="cb_tryserver.chromium.mac_mac_nacl_sdk_build">mac_nacl_sdk_build</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_rel_naclmore" id="cb_tryserver.chromium.mac_mac_rel_naclmore">
+                <label for="cb_tryserver.chromium.mac_mac_rel_naclmore">mac_rel_naclmore</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_valgrind" id="cb_tryserver.chromium.mac_mac_valgrind">
+                <label for="cb_tryserver.chromium.mac_mac_valgrind">mac_valgrind</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_x64_rel" id="cb_tryserver.chromium.mac_mac_x64_rel">
+                <label for="cb_tryserver.chromium.mac_mac_x64_rel">mac_x64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.mac:mac_xcodebuild" id="cb_tryserver.chromium.mac_mac_xcodebuild">
+                <label for="cb_tryserver.chromium.mac_mac_xcodebuild">mac_xcodebuild</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.chromium.win</b><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win8_aura" id="cb_tryserver.chromium.win_win8_aura">
+                <label for="cb_tryserver.chromium.win_win8_aura">win8_aura</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win8_chromium_dbg" id="cb_tryserver.chromium.win_win8_chromium_dbg">
+                <label for="cb_tryserver.chromium.win_win8_chromium_dbg">win8_chromium_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win8_chromium_rel" id="cb_tryserver.chromium.win_win8_chromium_rel">
+                <label for="cb_tryserver.chromium.win_win8_chromium_rel">win8_chromium_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_compile_dbg" id="cb_tryserver.chromium.win_win_chromium_compile_dbg">
+                <label for="cb_tryserver.chromium.win_win_chromium_compile_dbg">win_chromium_compile_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_compile_rel" id="cb_tryserver.chromium.win_win_chromium_compile_rel">
+                <label for="cb_tryserver.chromium.win_win_chromium_compile_rel">win_chromium_compile_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_dbg" id="cb_tryserver.chromium.win_win_chromium_dbg">
+                <label for="cb_tryserver.chromium.win_win_chromium_dbg">win_chromium_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_rel" id="cb_tryserver.chromium.win_win_chromium_rel">
+                <label for="cb_tryserver.chromium.win_win_chromium_rel">win_chromium_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_rel_swarming" id="cb_tryserver.chromium.win_win_chromium_rel_swarming">
+                <label for="cb_tryserver.chromium.win_win_chromium_rel_swarming">win_chromium_rel_swarming</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_x64_dbg" id="cb_tryserver.chromium.win_win_chromium_x64_dbg">
+                <label for="cb_tryserver.chromium.win_win_chromium_x64_dbg">win_chromium_x64_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_x64_rel" id="cb_tryserver.chromium.win_win_chromium_x64_rel">
+                <label for="cb_tryserver.chromium.win_win_chromium_x64_rel">win_chromium_x64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_chromium_x64_rel_swarming" id="cb_tryserver.chromium.win_win_chromium_x64_rel_swarming">
+                <label for="cb_tryserver.chromium.win_win_chromium_x64_rel_swarming">win_chromium_x64_rel_swarming</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_drmemory" id="cb_tryserver.chromium.win_win_drmemory">
+                <label for="cb_tryserver.chromium.win_win_drmemory">win_drmemory</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_nacl_sdk" id="cb_tryserver.chromium.win_win_nacl_sdk">
+                <label for="cb_tryserver.chromium.win_win_nacl_sdk">win_nacl_sdk</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_nacl_sdk_build" id="cb_tryserver.chromium.win_win_nacl_sdk_build">
+                <label for="cb_tryserver.chromium.win_win_nacl_sdk_build">win_nacl_sdk_build</label><br>
+            
+                <input type="checkbox" name="tryserver.chromium.win:win_rel_naclmore" id="cb_tryserver.chromium.win_win_rel_naclmore">
+                <label for="cb_tryserver.chromium.win_win_rel_naclmore">win_rel_naclmore</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-checkboxes-with-categories">
+            <b>tryserver.skia</b><br>
+            <a></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Build-builders')" id="tryserver.skia-Build-builders-pointer">Build</a><div id="tryserver.skia-Build-builders" style="display:none"><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Build|Mac10.7-builders')" id="tryserver.skia-Build|Mac10.7-builders-pointer">Mac10.7</a><div id="tryserver.skia-Build|Mac10.7-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.7-Clang-Arm7-Release-iOS-Trybot" name="tryserver.skia:Build-Mac10.7-Clang-Arm7-Release-iOS-Trybot" type="checkbox">Build-Mac10.7-Clang-Arm7-Release-iOS-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.7-Clang-x86_64-Debug-Trybot" name="tryserver.skia:Build-Mac10.7-Clang-x86_64-Debug-Trybot" type="checkbox">Build-Mac10.7-Clang-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.7-Clang-Arm7-Debug-iOS-Trybot" name="tryserver.skia:Build-Mac10.7-Clang-Arm7-Debug-iOS-Trybot" type="checkbox">Build-Mac10.7-Clang-Arm7-Debug-iOS-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.7-Clang-x86_64-Release-Trybot" name="tryserver.skia:Build-Mac10.7-Clang-x86_64-Release-Trybot" type="checkbox">Build-Mac10.7-Clang-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Build|Mac10.8-builders')" id="tryserver.skia-Build|Mac10.8-builders-pointer">Mac10.8</a><div id="tryserver.skia-Build|Mac10.8-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.8-Clang-x86_64-Debug-Trybot" name="tryserver.skia:Build-Mac10.8-Clang-x86_64-Debug-Trybot" type="checkbox">Build-Mac10.8-Clang-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Mac10.8-Clang-x86_64-Release-Trybot" name="tryserver.skia:Build-Mac10.8-Clang-x86_64-Release-Trybot" type="checkbox">Build-Mac10.8-Clang-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Build|Ubuntu13.10-builders')" id="tryserver.skia-Build|Ubuntu13.10-builders-pointer">Ubuntu13.10</a><div id="tryserver.skia-Build|Ubuntu13.10-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Release-CrOS_Alex-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Release-CrOS_Alex-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Release-CrOS_Alex-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-Clang-x86_64-Debug-Trybot" name="tryserver.skia:Build-Ubuntu13.10-Clang-x86_64-Debug-Trybot" type="checkbox">Build-Ubuntu13.10-Clang-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Debug-CrOS_Link-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Debug-CrOS_Link-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Debug-CrOS_Link-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_Neon-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_Neon-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_Neon-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Release-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Release-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-NaCl-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Release-NoGPU-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Release-NoGPU-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Release-NoGPU-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Debug-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Debug-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm64-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm64-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm64-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Mips64-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Mips64-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Mips64-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoNeon-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoNeon-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoNeon-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Mips64-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Mips64-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Mips64-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoThumb-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoThumb-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoThumb-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-MipsDSP2-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-MipsDSP2-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-MipsDSP2-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoThumb-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoThumb-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-Android_NoThumb-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Mips-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Mips-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Mips-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm64-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm64-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm64-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Release-CrOS_Daisy-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Release-CrOS_Daisy-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Release-CrOS_Daisy-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Mips-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Mips-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Mips-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Release-CrOS_Link-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Release-CrOS_Link-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Release-CrOS_Link-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_Neon-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_Neon-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_Neon-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-NaCl-Release-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-NaCl-Release-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-NaCl-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Debug-CrOS_Daisy-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoNeon-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoNeon-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android_NoNeon-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Release-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Debug-CrOS_Alex-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Debug-CrOS_Alex-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Debug-CrOS_Alex-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86-Release-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86-Release-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-x86_64-Debug-NoGPU-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-x86_64-Debug-NoGPU-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-x86_64-Debug-NoGPU-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-MipsDSP2-Debug-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-MipsDSP2-Debug-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-MipsDSP2-Debug-Android-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android-Trybot" name="tryserver.skia:Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android-Trybot" type="checkbox">Build-Ubuntu13.10-GCC4.8-Arm7-Release-Android-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Build|Win-builders')" id="tryserver.skia-Build|Win-builders-pointer">Win</a><div id="tryserver.skia-Build|Win-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Debug-ANGLE-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Debug-ANGLE-Trybot" type="checkbox">Build-Win-VS2013-x86-Debug-ANGLE-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Release-GDI-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Release-GDI-Trybot" type="checkbox">Build-Win-VS2013-x86-Release-GDI-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Release-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Release-Trybot" type="checkbox">Build-Win-VS2013-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Release-ANGLE-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Release-ANGLE-Trybot" type="checkbox">Build-Win-VS2013-x86-Release-ANGLE-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86_64-Debug-Trybot" name="tryserver.skia:Build-Win-VS2013-x86_64-Debug-Trybot" type="checkbox">Build-Win-VS2013-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Debug-Exceptions-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Debug-Exceptions-Trybot" type="checkbox">Build-Win-VS2013-x86-Debug-Exceptions-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Debug-GDI-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Debug-GDI-Trybot" type="checkbox">Build-Win-VS2013-x86-Debug-GDI-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86_64-Release-Trybot" name="tryserver.skia:Build-Win-VS2013-x86_64-Release-Trybot" type="checkbox">Build-Win-VS2013-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Build-Win-VS2013-x86-Debug-Trybot" name="tryserver.skia:Build-Win-VS2013-x86-Debug-Trybot" type="checkbox">Build-Win-VS2013-x86-Debug-Trybot</div></div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Canary-builders')" id="tryserver.skia-Canary-builders-pointer">Canary</a><div id="tryserver.skia-Canary-builders" style="display:none"><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Canary|Chrome-builders')" id="tryserver.skia-Canary|Chrome-builders-pointer">Chrome</a><div id="tryserver.skia-Canary|Chrome-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Canary-Chrome-Win-Ninja-x86-SharedLib_ToT-Trybot" name="tryserver.skia:Canary-Chrome-Win-Ninja-x86-SharedLib_ToT-Trybot" type="checkbox">Canary-Chrome-Win-Ninja-x86-SharedLib_ToT-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Canary-Chrome-Ubuntu13.10-Ninja-x86_64-DRT-Trybot" name="tryserver.skia:Canary-Chrome-Ubuntu13.10-Ninja-x86_64-DRT-Trybot" type="checkbox">Canary-Chrome-Ubuntu13.10-Ninja-x86_64-DRT-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Canary-Chrome-Ubuntu13.10-Ninja-x86_64-ToT-Trybot" name="tryserver.skia:Canary-Chrome-Ubuntu13.10-Ninja-x86_64-ToT-Trybot" type="checkbox">Canary-Chrome-Ubuntu13.10-Ninja-x86_64-ToT-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Canary|Moz2D-builders')" id="tryserver.skia-Canary|Moz2D-builders-pointer">Moz2D</a><div id="tryserver.skia-Canary|Moz2D-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Canary-Moz2D-Ubuntu12-GCC-x86_64-Release-Trybot" name="tryserver.skia:Canary-Moz2D-Ubuntu12-GCC-x86_64-Release-Trybot" type="checkbox">Canary-Moz2D-Ubuntu12-GCC-x86_64-Release-Trybot</div></div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Housekeeper-builders')" id="tryserver.skia-Housekeeper-builders-pointer">Housekeeper</a><div id="tryserver.skia-Housekeeper-builders" style="display:none"><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Housekeeper|Nightly-builders')" id="tryserver.skia-Housekeeper|Nightly-builders-pointer">Nightly</a><div id="tryserver.skia-Housekeeper|Nightly-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Housekeeper-Nightly-Trybot" name="tryserver.skia:Housekeeper-Nightly-Trybot" type="checkbox">Housekeeper-Nightly-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Housekeeper-Nightly-Monitoring-Trybot" name="tryserver.skia:Housekeeper-Nightly-Monitoring-Trybot" type="checkbox">Housekeeper-Nightly-Monitoring-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Housekeeper-Nightly-RecreateSKPs-Trybot" name="tryserver.skia:Housekeeper-Nightly-RecreateSKPs-Trybot" type="checkbox">Housekeeper-Nightly-RecreateSKPs-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Housekeeper|PerCommit-builders')" id="tryserver.skia-Housekeeper|PerCommit-builders-pointer">PerCommit</a><div id="tryserver.skia-Housekeeper|PerCommit-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Housekeeper-PerCommit-Trybot" name="tryserver.skia:Housekeeper-PerCommit-Trybot" type="checkbox">Housekeeper-PerCommit-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Housekeeper-PerCommit-AutoRoll-Trybot" name="tryserver.skia:Housekeeper-PerCommit-AutoRoll-Trybot" type="checkbox">Housekeeper-PerCommit-AutoRoll-Trybot</div></div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf-builders')" id="tryserver.skia-Perf-builders-pointer">Perf</a><div id="tryserver.skia-Perf-builders" style="display:none"><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Android-builders')" id="tryserver.skia-Perf|Android-builders-pointer">Android</a><div id="tryserver.skia-Perf|Android-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-Nexus10-MaliT604-Arm7-Release-Trybot" name="tryserver.skia:Perf-Android-Nexus10-MaliT604-Arm7-Release-Trybot" type="checkbox">Perf-Android-Nexus10-MaliT604-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-Nexus5-Adreno330-Arm7-Release-Trybot" name="tryserver.skia:Perf-Android-Nexus5-Adreno330-Arm7-Release-Trybot" type="checkbox">Perf-Android-Nexus5-Adreno330-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot" name="tryserver.skia:Perf-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot" type="checkbox">Perf-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-Nexus7-Tegra3-Arm7-Release-Trybot" name="tryserver.skia:Perf-Android-Nexus7-Tegra3-Arm7-Release-Trybot" type="checkbox">Perf-Android-Nexus7-Tegra3-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-Xoom-Tegra2-Arm7-Release-Trybot" name="tryserver.skia:Perf-Android-Xoom-Tegra2-Arm7-Release-Trybot" type="checkbox">Perf-Android-Xoom-Tegra2-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Android-Venue8-PowerVR-x86-Release-Trybot" name="tryserver.skia:Perf-Android-Venue8-PowerVR-x86-Release-Trybot" type="checkbox">Perf-Android-Venue8-PowerVR-x86-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|ChromeOS-builders')" id="tryserver.skia-Perf|ChromeOS-builders-pointer">ChromeOS</a><div id="tryserver.skia-Perf|ChromeOS-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-ChromeOS-Alex-GMA3150-x86-Release-Trybot" name="tryserver.skia:Perf-ChromeOS-Alex-GMA3150-x86-Release-Trybot" type="checkbox">Perf-ChromeOS-Alex-GMA3150-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-ChromeOS-Link-HD4000-x86_64-Release-Trybot" name="tryserver.skia:Perf-ChromeOS-Link-HD4000-x86_64-Release-Trybot" type="checkbox">Perf-ChromeOS-Link-HD4000-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot" name="tryserver.skia:Perf-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot" type="checkbox">Perf-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Mac10.7-builders')" id="tryserver.skia-Perf|Mac10.7-builders-pointer">Mac10.7</a><div id="tryserver.skia-Perf|Mac10.7-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot" name="tryserver.skia:Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot" type="checkbox">Perf-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Mac10.8-builders')" id="tryserver.skia-Perf|Mac10.8-builders-pointer">Mac10.8</a><div id="tryserver.skia-Perf|Mac10.8-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot" name="tryserver.skia:Perf-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot" type="checkbox">Perf-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Ubuntu12-builders')" id="tryserver.skia-Perf|Ubuntu12-builders-pointer">Ubuntu12</a><div id="tryserver.skia-Perf|Ubuntu12-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot" name="tryserver.skia:Perf-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot" type="checkbox">Perf-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot" name="tryserver.skia:Perf-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot" type="checkbox">Perf-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Win7-builders')" id="tryserver.skia-Perf|Win7-builders-pointer">Win7</a><div id="tryserver.skia-Perf|Win7-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win7-ShuttleA-HD2000-x86-Release-Trybot" name="tryserver.skia:Perf-Win7-ShuttleA-HD2000-x86-Release-Trybot" type="checkbox">Perf-Win7-ShuttleA-HD2000-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot" name="tryserver.skia:Perf-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot" type="checkbox">Perf-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win7-ShuttleA-HD2000-x86_64-Release-Trybot" name="tryserver.skia:Perf-Win7-ShuttleA-HD2000-x86_64-Release-Trybot" type="checkbox">Perf-Win7-ShuttleA-HD2000-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot" name="tryserver.skia:Perf-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot" type="checkbox">Perf-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Perf|Win8-builders')" id="tryserver.skia-Perf|Win8-builders-pointer">Win8</a><div id="tryserver.skia-Perf|Win8-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win8-ShuttleA-GTX660-x86_64-Release-Trybot" name="tryserver.skia:Perf-Win8-ShuttleA-GTX660-x86_64-Release-Trybot" type="checkbox">Perf-Win8-ShuttleA-GTX660-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win8-ShuttleA-HD7770-x86-Release-Trybot" name="tryserver.skia:Perf-Win8-ShuttleA-HD7770-x86-Release-Trybot" type="checkbox">Perf-Win8-ShuttleA-HD7770-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win8-ShuttleA-HD7770-x86_64-Release-Trybot" name="tryserver.skia:Perf-Win8-ShuttleA-HD7770-x86_64-Release-Trybot" type="checkbox">Perf-Win8-ShuttleA-HD7770-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Perf-Win8-ShuttleA-GTX660-x86-Release-Trybot" name="tryserver.skia:Perf-Win8-ShuttleA-GTX660-x86-Release-Trybot" type="checkbox">Perf-Win8-ShuttleA-GTX660-x86-Release-Trybot</div></div><br></div><br><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test-builders')" id="tryserver.skia-Test-builders-pointer">Test</a><div id="tryserver.skia-Test-builders" style="display:none"><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Android-builders')" id="tryserver.skia-Test|Android-builders-pointer">Android</a><div id="tryserver.skia-Test|Android-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus10-MaliT604-Arm7-Release-Trybot" name="tryserver.skia:Test-Android-Nexus10-MaliT604-Arm7-Release-Trybot" type="checkbox">Test-Android-Nexus10-MaliT604-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus5-Adreno330-Arm7-Debug-Trybot" name="tryserver.skia:Test-Android-Nexus5-Adreno330-Arm7-Debug-Trybot" type="checkbox">Test-Android-Nexus5-Adreno330-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Xoom-Tegra2-Arm7-Release-Trybot" name="tryserver.skia:Test-Android-Xoom-Tegra2-Arm7-Release-Trybot" type="checkbox">Test-Android-Xoom-Tegra2-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus10-MaliT604-Arm7-Debug-Trybot" name="tryserver.skia:Test-Android-Nexus10-MaliT604-Arm7-Debug-Trybot" type="checkbox">Test-Android-Nexus10-MaliT604-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Xoom-Tegra2-Arm7-Debug-Trybot" name="tryserver.skia:Test-Android-Xoom-Tegra2-Arm7-Debug-Trybot" type="checkbox">Test-Android-Xoom-Tegra2-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus5-Adreno330-Arm7-Release-Trybot" name="tryserver.skia:Test-Android-Nexus5-Adreno330-Arm7-Release-Trybot" type="checkbox">Test-Android-Nexus5-Adreno330-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot" name="tryserver.skia:Test-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot" type="checkbox">Test-Android-GalaxyNexus-SGX540-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-GalaxyNexus-SGX540-Arm7-Debug-Trybot" name="tryserver.skia:Test-Android-GalaxyNexus-SGX540-Arm7-Debug-Trybot" type="checkbox">Test-Android-GalaxyNexus-SGX540-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus7-Tegra3-Arm7-Debug-Trybot" name="tryserver.skia:Test-Android-Nexus7-Tegra3-Arm7-Debug-Trybot" type="checkbox">Test-Android-Nexus7-Tegra3-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Venue8-PowerVR-x86-Release-Trybot" name="tryserver.skia:Test-Android-Venue8-PowerVR-x86-Release-Trybot" type="checkbox">Test-Android-Venue8-PowerVR-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Venue8-PowerVR-x86-Debug-Trybot" name="tryserver.skia:Test-Android-Venue8-PowerVR-x86-Debug-Trybot" type="checkbox">Test-Android-Venue8-PowerVR-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Android-Nexus7-Tegra3-Arm7-Release-Trybot" name="tryserver.skia:Test-Android-Nexus7-Tegra3-Arm7-Release-Trybot" type="checkbox">Test-Android-Nexus7-Tegra3-Arm7-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|ChromeOS-builders')" id="tryserver.skia-Test|ChromeOS-builders-pointer">ChromeOS</a><div id="tryserver.skia-Test|ChromeOS-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Link-HD4000-x86_64-Release-Trybot" name="tryserver.skia:Test-ChromeOS-Link-HD4000-x86_64-Release-Trybot" type="checkbox">Test-ChromeOS-Link-HD4000-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Daisy-MaliT604-Arm7-Debug-Trybot" name="tryserver.skia:Test-ChromeOS-Daisy-MaliT604-Arm7-Debug-Trybot" type="checkbox">Test-ChromeOS-Daisy-MaliT604-Arm7-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Link-HD4000-x86_64-Debug-Trybot" name="tryserver.skia:Test-ChromeOS-Link-HD4000-x86_64-Debug-Trybot" type="checkbox">Test-ChromeOS-Link-HD4000-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Alex-GMA3150-x86-Release-Trybot" name="tryserver.skia:Test-ChromeOS-Alex-GMA3150-x86-Release-Trybot" type="checkbox">Test-ChromeOS-Alex-GMA3150-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot" name="tryserver.skia:Test-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot" type="checkbox">Test-ChromeOS-Daisy-MaliT604-Arm7-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-ChromeOS-Alex-GMA3150-x86-Debug-Trybot" name="tryserver.skia:Test-ChromeOS-Alex-GMA3150-x86-Debug-Trybot" type="checkbox">Test-ChromeOS-Alex-GMA3150-x86-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Mac10.6-builders')" id="tryserver.skia-Test|Mac10.6-builders-pointer">Mac10.6</a><div id="tryserver.skia-Test|Mac10.6-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Release-Trybot" name="tryserver.skia:Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Release-Trybot" type="checkbox">Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" name="tryserver.skia:Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" type="checkbox">Test-Mac10.6-MacMini4.1-GeForce320M-x86_64-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Mac10.7-builders')" id="tryserver.skia-Test|Mac10.7-builders-pointer">Mac10.7</a><div id="tryserver.skia-Test|Mac10.7-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot" name="tryserver.skia:Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot" type="checkbox">Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" name="tryserver.skia:Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" type="checkbox">Test-Mac10.7-MacMini4.1-GeForce320M-x86_64-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Mac10.8-builders')" id="tryserver.skia-Test|Mac10.8-builders-pointer">Mac10.8</a><div id="tryserver.skia-Test|Mac10.8-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot" name="tryserver.skia:Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot" type="checkbox">Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" name="tryserver.skia:Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Debug-Trybot" type="checkbox">Test-Mac10.8-MacMini4.1-GeForce320M-x86_64-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Ubuntu12-builders')" id="tryserver.skia-Test|Ubuntu12-builders-pointer">Ubuntu12</a><div id="tryserver.skia-Test|Ubuntu12-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Debug-ZeroGPUCache-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Debug-ZeroGPUCache-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Debug-ZeroGPUCache-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX660-x86_64-Debug-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX660-x86_64-Debug-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX660-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX660-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Release-Valgrind-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Release-Valgrind-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX550Ti-x86_64-Release-Valgrind-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX660-x86-Debug-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX660-x86-Debug-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX660-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot" name="tryserver.skia:Test-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot" type="checkbox">Test-Ubuntu12-ShuttleA-GTX660-x86_64-Release-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Ubuntu13.10-builders')" id="tryserver.skia-Test|Ubuntu13.10-builders-pointer">Ubuntu13.10</a><div id="tryserver.skia-Test|Ubuntu13.10-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-Shared-Trybot" name="tryserver.skia:Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-Shared-Trybot" type="checkbox">Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-Shared-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-TSAN-Trybot" name="tryserver.skia:Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-TSAN-Trybot" type="checkbox">Test-Ubuntu13.10-GCE-NoGPU-x86_64-Release-TSAN-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-ASAN-Trybot" name="tryserver.skia:Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-ASAN-Trybot" type="checkbox">Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-ASAN-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-Trybot" name="tryserver.skia:Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-Trybot" type="checkbox">Test-Ubuntu13.10-GCE-NoGPU-x86_64-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Win7-builders')" id="tryserver.skia-Test|Win7-builders-pointer">Win7</a><div id="tryserver.skia-Test|Win7-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86_64-Release-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86_64-Release-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Debug-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Debug-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Release-ANGLE-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Debug-ANGLE-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Debug-ANGLE-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Debug-ANGLE-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Release-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Release-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Debug-GDI-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Debug-GDI-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Debug-GDI-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86-Release-GDI-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win7-ShuttleA-HD2000-x86_64-Debug-Trybot" name="tryserver.skia:Test-Win7-ShuttleA-HD2000-x86_64-Debug-Trybot" type="checkbox">Test-Win7-ShuttleA-HD2000-x86_64-Debug-Trybot</div></div><br><a style="padding-left:2em"></a><a class="toggled-section closedtriangle" href="javascript:M_toggleSection('tryserver.skia-Test|Win8-builders')" id="tryserver.skia-Test|Win8-builders-pointer">Win8</a><div id="tryserver.skia-Test|Win8-builders" style="display:none"><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-HD7770-x86_64-Release-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-HD7770-x86_64-Release-Trybot" type="checkbox">Test-Win8-ShuttleA-HD7770-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-HD7770-x86-Debug-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-HD7770-x86-Debug-Trybot" type="checkbox">Test-Win8-ShuttleA-HD7770-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-HD7770-x86-Release-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-HD7770-x86-Release-Trybot" type="checkbox">Test-Win8-ShuttleA-HD7770-x86-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-HD7770-x86_64-Debug-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-HD7770-x86_64-Debug-Trybot" type="checkbox">Test-Win8-ShuttleA-HD7770-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-GTX660-x86_64-Debug-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-GTX660-x86_64-Debug-Trybot" type="checkbox">Test-Win8-ShuttleA-GTX660-x86_64-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-GTX660-x86_64-Release-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-GTX660-x86_64-Release-Trybot" type="checkbox">Test-Win8-ShuttleA-GTX660-x86_64-Release-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-GTX660-x86-Debug-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-GTX660-x86-Debug-Trybot" type="checkbox">Test-Win8-ShuttleA-GTX660-x86-Debug-Trybot</div><div class="trybot-popup-input" style="padding-left:2em"><input checked="checked" id="cb_tryserver.skia_Test-Win8-ShuttleA-GTX660-x86-Release-Trybot" name="tryserver.skia:Test-Win8-ShuttleA-GTX660-x86-Release-Trybot" type="checkbox">Test-Win8-ShuttleA-GTX660-x86-Release-Trybot</div></div><br></div><br>
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.v8</b><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux64_rel" id="cb_tryserver.v8_v8_linux64_rel">
+                <label for="cb_tryserver.v8_v8_linux64_rel">v8_linux64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_arm64_rel" id="cb_tryserver.v8_v8_linux_arm64_rel">
+                <label for="cb_tryserver.v8_v8_linux_arm64_rel">v8_linux_arm64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_arm_dbg" id="cb_tryserver.v8_v8_linux_arm_dbg">
+                <label for="cb_tryserver.v8_v8_linux_arm_dbg">v8_linux_arm_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_dbg" id="cb_tryserver.v8_v8_linux_dbg">
+                <label for="cb_tryserver.v8_v8_linux_dbg">v8_linux_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_layout_dbg" id="cb_tryserver.v8_v8_linux_layout_dbg">
+                <label for="cb_tryserver.v8_v8_linux_layout_dbg">v8_linux_layout_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_nosnap_dbg" id="cb_tryserver.v8_v8_linux_nosnap_dbg">
+                <label for="cb_tryserver.v8_v8_linux_nosnap_dbg">v8_linux_nosnap_dbg</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_nosnap_rel" id="cb_tryserver.v8_v8_linux_nosnap_rel">
+                <label for="cb_tryserver.v8_v8_linux_nosnap_rel">v8_linux_nosnap_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_linux_rel" id="cb_tryserver.v8_v8_linux_rel">
+                <label for="cb_tryserver.v8_v8_linux_rel">v8_linux_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_mac_rel" id="cb_tryserver.v8_v8_mac_rel">
+                <label for="cb_tryserver.v8_v8_mac_rel">v8_mac_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_win64_rel" id="cb_tryserver.v8_v8_win64_rel">
+                <label for="cb_tryserver.v8_v8_win64_rel">v8_win64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.v8:v8_win_rel" id="cb_tryserver.v8_v8_win_rel">
+                <label for="cb_tryserver.v8_v8_win_rel">v8_win_rel</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+          
+            <div class="trybot-popup-builders">
+            <b>tryserver.webrtc</b><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android" id="cb_tryserver.webrtc_android">
+                <label for="cb_tryserver.webrtc_android">android</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android_arm64" id="cb_tryserver.webrtc_android_arm64">
+                <label for="cb_tryserver.webrtc_android_arm64">android_arm64</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android_clang" id="cb_tryserver.webrtc_android_clang">
+                <label for="cb_tryserver.webrtc_android_clang">android_clang</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android_gn" id="cb_tryserver.webrtc_android_gn">
+                <label for="cb_tryserver.webrtc_android_gn">android_gn</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android_gn_rel" id="cb_tryserver.webrtc_android_gn_rel">
+                <label for="cb_tryserver.webrtc_android_gn_rel">android_gn_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:android_rel" id="cb_tryserver.webrtc_android_rel">
+                <label for="cb_tryserver.webrtc_android_rel">android_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:ios" id="cb_tryserver.webrtc_ios">
+                <label for="cb_tryserver.webrtc_ios">ios</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:ios_rel" id="cb_tryserver.webrtc_ios_rel">
+                <label for="cb_tryserver.webrtc_ios_rel">ios_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux" id="cb_tryserver.webrtc_linux">
+                <label for="cb_tryserver.webrtc_linux">linux</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_asan" id="cb_tryserver.webrtc_linux_asan">
+                <label for="cb_tryserver.webrtc_linux_asan">linux_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_baremetal" id="cb_tryserver.webrtc_linux_baremetal">
+                <label for="cb_tryserver.webrtc_linux_baremetal">linux_baremetal</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_gn" id="cb_tryserver.webrtc_linux_gn">
+                <label for="cb_tryserver.webrtc_linux_gn">linux_gn</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_gn_rel" id="cb_tryserver.webrtc_linux_gn_rel">
+                <label for="cb_tryserver.webrtc_linux_gn_rel">linux_gn_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_memcheck" id="cb_tryserver.webrtc_linux_memcheck">
+                <label for="cb_tryserver.webrtc_linux_memcheck">linux_memcheck</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_rel" id="cb_tryserver.webrtc_linux_rel">
+                <label for="cb_tryserver.webrtc_linux_rel">linux_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:linux_tsan2" id="cb_tryserver.webrtc_linux_tsan2">
+                <label for="cb_tryserver.webrtc_linux_tsan2">linux_tsan2</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:mac" id="cb_tryserver.webrtc_mac">
+                <label for="cb_tryserver.webrtc_mac">mac</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:mac_asan" id="cb_tryserver.webrtc_mac_asan">
+                <label for="cb_tryserver.webrtc_mac_asan">mac_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:mac_baremetal" id="cb_tryserver.webrtc_mac_baremetal">
+                <label for="cb_tryserver.webrtc_mac_baremetal">mac_baremetal</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:mac_rel" id="cb_tryserver.webrtc_mac_rel">
+                <label for="cb_tryserver.webrtc_mac_rel">mac_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:mac_x64_rel" id="cb_tryserver.webrtc_mac_x64_rel">
+                <label for="cb_tryserver.webrtc_mac_x64_rel">mac_x64_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win" id="cb_tryserver.webrtc_win">
+                <label for="cb_tryserver.webrtc_win">win</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_asan" id="cb_tryserver.webrtc_win_asan">
+                <label for="cb_tryserver.webrtc_win_asan">win_asan</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_baremetal" id="cb_tryserver.webrtc_win_baremetal">
+                <label for="cb_tryserver.webrtc_win_baremetal">win_baremetal</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_drmemory_full" id="cb_tryserver.webrtc_win_drmemory_full">
+                <label for="cb_tryserver.webrtc_win_drmemory_full">win_drmemory_full</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_drmemory_light" id="cb_tryserver.webrtc_win_drmemory_light">
+                <label for="cb_tryserver.webrtc_win_drmemory_light">win_drmemory_light</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_rel" id="cb_tryserver.webrtc_win_rel">
+                <label for="cb_tryserver.webrtc_win_rel">win_rel</label><br>
+            
+                <input type="checkbox" name="tryserver.webrtc:win_x64_rel" id="cb_tryserver.webrtc_win_x64_rel">
+                <label for="cb_tryserver.webrtc_win_x64_rel">win_x64_rel</label><br>
+            
+            </div>
+          
+          <div class="trybot-button-div">
+            <input type="button" value="Update" onclick="M_updatePendingTrybots(&#39;472853003&#39;, &#39;60001&#39;, &#39;769f34abef05198ffba2e4b269353647&#39;)">
+            <input type="button" value="Close" onclick="M_closePendingTrybots()">
+            
+          </div>
+        
+        </div>
+    </form>
+  </div>
+
+
+
+      </td>
+    </tr>
+  </tbody></table>
+
+</div>
+
+  
+    <div class="popup" id="popup-issue">
+      <b>Issue 472853003: Run 2-keyframe animations with non-liear timing on the compositor.
+     (Closed) </b><br>
+      Created 1 month, 1 week ago by me<br>
+      Modified 1 month ago<br>
+      Reviewers: dstockwell, shans, Timothy Loh<br>
+      Base URL: https://chromium.googlesource.com/chromium/blink.git@master<br>
+      Comments: 12
+      
+    </div>
+  
+
+
+<p></p>
+<div style="float: left;">
+  <a target="_blank" href="http://code.google.com/appengine/"><img border="0" src="./Code Review_files/appengine-noborder-120x30.gif" alt="Powered by Google App Engine"></a>
+</div>
+
+<div class="extra" style="font-size: 9pt; float: right; text-align: right;">
+  <div style="height:14px;">
+  <img src="./Code Review_files/rss.gif" alt="RSS Feeds" width="14" height="14" align="top">
+  <a href="https://codereview.chromium.org/rss/all">Recent Issues</a>
+  
+  |
+  <a href="https://codereview.chromium.org/rss/mine/ikilpatrick">My Issues</a>
+  |
+  <a href="https://codereview.chromium.org/rss/reviews/ikilpatrick">My Reviews</a>
+  |
+  <a href="https://codereview.chromium.org/rss/closd/ikilpatrick">My Closed</a>
+  
+  
+  |
+  <a href="https://codereview.chromium.org/rss/issue/472853003">This issue</a>
+  
+  </div>
+  <div style="margin-top: .3em;">This is Rietveld <a href="http://code.google.com/p/rietveld/source/list">e68b4c6
+</a></div>
+</div>
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-4803694-4']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+
+<script id="hiddenlpsubmitdiv" style="display: none;"></script><script>try{for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){ var lastpass_f = document.forms[lastpass_iter]; if(typeof(lastpass_f.lpsubmitorig2)=="undefined"){ lastpass_f.lpsubmitorig2 = lastpass_f.submit; lastpass_f.submit = function(){ var form=this; var customEvent = document.createEvent("Event"); customEvent.initEvent("lpCustomEvent", true, true); var d = document.getElementById("hiddenlpsubmitdiv"); if (d) {for(var i = 0; i < document.forms.length; i++){ if(document.forms[i]==form){ d.innerText=i; } } d.dispatchEvent(customEvent); }form.lpsubmitorig2(); } } }}catch(e){}</script></body></html>
