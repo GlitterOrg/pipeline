@@ -25,17 +25,18 @@ function _handleCustomProperties() {
 }
 
 function _handleCustomPropertiesForElement(el) {
-  if (el._style == undefined)
-    return;
-  var cs = getComputedStyle(el);
   for (name in _customProperties) {
-    if (el._style[name] == undefined)
+    if (_customProperties[name].initial !== undefined)
+      if (el.style[name] == undefined) {
+	el.style[name] = _customProperties[name].initial;
+      }
+  }
+  for (name in _customProperties) {
+    if (el.style[name] == undefined)
       continue;
     // TODO: Work out how to order these for complex property sets
     _customProperties[name].apply({
-      value: el._style[name],
-      computed: cs,
-      specified: el._style,
+      value: el.style[name],
       result: el.style
     });
   }
@@ -72,14 +73,13 @@ function _processScrollers() {
     _scrollers[i]._position -= computedDelta;  
     _scrollers[i]._position = Math.min(Math.max(0, _scrollers[i]._position), 1600);
 
-    if (_scrollers[i]._style !== undefined) {
-      _scrollers[i]._style.scrollDeltas = _scrollers[i]._deltas;
-      _scrollers[i]._style.oldScrollOffset = oldOffset;
-      _scrollers[i]._style.computedScrollDelta = -computedDelta;
-      _scrollers[i]._style.scrollOffset = _scrollers[i]._position;
-      _handleCustomPropertiesForElement(_scrollers[i]);
-      _scrollers[i]._position = _scrollers[i]._style.scrollOffset;
-    }
+    _scrollers[i].style.scrollDeltas = _scrollers[i]._deltas;
+    _scrollers[i].style.oldScrollOffset = oldOffset;
+    _scrollers[i].style.computedScrollDelta = -computedDelta;
+    _scrollers[i].style.scrollOffset = _scrollers[i]._position;
+    _scrollers[i].style.scrollOffset = _scrollers[i]._position;
+    _handleCustomPropertiesForElement(_scrollers[i]);
+    _scrollers[i]._position = _scrollers[i].style.scrollOffset;
 
     _scrollers[i].style.transform = 'translateY(' + (-_scrollers[i]._position) + 'px)';
     _scrollers[i]._deltas = [];
@@ -89,3 +89,38 @@ function _processScrollers() {
 function isolate(f, context) {
   return f.bind(context);
 }
+
+var _animate = Element.prototype.animate;
+Element.prototype.animate = function(keyframes, timing) {
+  var shadowKeyframes = [];
+  for (var i = 0; i < keyframes.length; i++) {
+    var keyframe = keyframes[i];
+    var shadowKeyframe = {};
+    for (var property in keyframe) {
+      if (property in _customProperties) {
+	shadowKeyframe[property] = keyframe[property];
+      }
+    }
+    shadowKeyframes.push(shadowKeyframe);
+  }
+
+  var player = _animate.call(this, keyframes, timing);
+  requestAnimationFrame(_tickAnimation(this, player, shadowKeyframes, 
+      timing.duration !== undefined ? timing.duration : timing));
+}
+
+function _tickAnimation(element, player, keyframes, duration) {
+  var tick = function(t) {
+    var f = player.currentTime / duration;
+    // TODO: Do this properly. Deal with multiple keyframes. Respect animateAs declarations.
+    for (var property in keyframes[0]) {
+      element.style[property] = (1 - f) * keyframes[0][property] + f * keyframes[1][property];
+    }
+    if (player.currentTime < duration) {
+      requestAnimationFrame(tick);
+    }
+    _handleCustomPropertiesForElement(element);
+  }
+  return tick;
+}
+

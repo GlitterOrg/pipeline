@@ -51,11 +51,7 @@ css.applyRules_ = function(stylesheet, el) {
   }
 
   function apply(el, key, value) {
-    if (el.style.hasOwnProperty(key))
-      el.style[key] = value;
-    if (el._style == undefined)
-      el._style = {};
-    el._style[key] = value;
+    el.style[key] = value;
   }
 
   for (var key in style) {

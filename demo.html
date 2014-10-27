@@ -45,27 +45,36 @@
 </div>
 <script>
 registerPropertyHandler('scrollOut', {
-  apply: isolate(
-    function(mutation) {
-      if (mutation.value == 'glow') {
-        if (isNaN(this.overflow)) { this.overflow = 0; }
-        this.overflow += mutation.specified.computedScrollDelta;
-        if (this.overflow < 0) {
-          glower.style.backgroundColor = 'rgb(255, 0, ' + (-this.overflow * 2) + ')';
-          mutation.specified.scrollOffset = 0;
-        } else {
-          glower.style.backgroundColor = 'red';
-        }
+  apply: function(mutation) {
+    console.log(mutation);
+    if (mutation.value == 'glow' && mutation.result.computedScrollDelta !== undefined) {
+      if (mutation.result.overscroll == undefined)
+	mutation.result.overscroll = 0;
+      mutation.result.overscroll += mutation.result.computedScrollDelta;
+      if (mutation.result.overscroll < 0) {
+	mutation.result.scrollOffset = 0;
       }
-    }, {overflow: 0}
-  )
+    }
+  }
 });
+
+registerPropertyHandler('overscroll', {
+  apply: function(mutation) {
+    if (mutation.value < 0) {
+      glower.style.backgroundColor = 'rgb(255, 0, ' + Math.round(-mutation.value * 2) + ')';
+    } else {
+      glower.style.backgroundColor = 'red';
+    }
+  },
+  animateAs: 'number'
+});
+
 
 isAScroller(contents);
 
 PolymerGestures.addEventListener(container, 'trackend', function(e) {
-  var oldColor = getComputedStyle(glower).backgroundColor;
-  glower.animate([{backgroundColor: oldColor}, {backgroundColor: 'red'}], 300);
-  glower.style.backgroundColor = 'red';
+  if (contents.style.overscroll < 0)
+    contents.animate([{overscroll: contents.style.overscroll}, {overscroll: 0}],
+	-contents.style.overscroll * 2);
 });
 </script>
