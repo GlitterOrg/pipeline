@@ -5,7 +5,7 @@ window.CLOSURE_IMPORT_SCRIPT = function(src) {
   xhr.send(''); // synchronous!
 
   var el = document.createElement('script');
-  el.type = "text/javascript";
+  el.type = 'text/javascript';
   el.text = xhr.responseText;
   document.getElementsByTagName('head')[0].appendChild(el);
 };

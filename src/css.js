@@ -24,7 +24,7 @@ css.exec_ = function(stylesheet) {
   for (var i = 0; i < els.length; i++) {
     css.applyRules_(stylesheet, els[i]);
   }
-}
+};
 
 
 /**
@@ -38,7 +38,7 @@ css.applyRules_ = function(stylesheet, el) {
   var importantStyle = {};
 
   for (var i = 0; i < rules.length; i++) {
-    var styleObj = rules
+    var styleObj = rules;
     var rule = rules[i].style.keys_;
     for (var j = 0; j < rule.length; j++) {
       var key = rule[j];
@@ -85,7 +85,7 @@ css.findRules_ = function(stylesheet, el) {
   // Sort rules in order.
   return matching.sort(function(a, b) {
     return css.calcSpecificity_(a.selectorTokens, el) -
-      css.calcSpecificity_(b.selectorTokens, el);
+        css.calcSpecificity_(b.selectorTokens, el);
   });
 };
 
@@ -138,7 +138,7 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
       case css.TOKENS.COLON:
         // Explicity check if we have a double colon as pseudo element.
         state = state == css.STATES_.PSEUDO ?
-          css.STATES_.PSEUDO_ELEMENT : css.STATES_.PSEUDO;
+            css.STATES_.PSEUDO_ELEMENT : css.STATES_.PSEUDO;
         break;
 
       case css.TOKENS.HASH:
@@ -164,7 +164,7 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
         for (var i = 0; i < value.length; i++) {
           if (value[i]['tokenType'] == ',') {
             selectors.push(value.slice(previous, i));
-            previous = i+1;
+            previous = i + 1;
           }
         }
 
@@ -193,7 +193,7 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
           return prev;
         }, null);
 
-        // Add to result so far.  
+        // Add to result so far.
         a += result[0];
         b += result[1];
         c += result[2];

@@ -48,6 +48,7 @@ cssom.CSSStyleSheet = goog.defineClass(Object, {
   }
 });
 
+
 /**
  * Represents an abstract, base CSS style rule. Each distinct CSS style rule
  * type is represented by a distinct interface that inherits from this
@@ -76,6 +77,7 @@ cssom.CSSRule = goog.defineClass(Object, {
     NAMESPACE_RULE: 10
   }
 });
+
 
 /** Represents a style rule. */
 cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
@@ -119,16 +121,12 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
         goog.asserts.assertObject(check(cssom.TOKENS.COLON));
         check(cssom.TOKENS.WHITESPACE);
 
-/*        var idx = arr.reduce(function(prev, curr, index) {
-
-        });*/
-
         var ident = check(cssom.TOKENS.IDENT);
         var func = check(cssom.TOKENS.FUNCTION);
         var dimen = check(cssom.TOKENS.DIMENSION);
         var hash = check(cssom.TOKENS.HASH);
         var propertyToken =
-          goog.asserts.assertObject(ident || func || dimen || hash);
+            goog.asserts.assertObject(ident || func || dimen || hash);
 
         var propertyValue;
         if (ident) {
@@ -173,15 +171,17 @@ cssom.createFoo_ = function(tokens) {
   return function(type, value) {
     var tok = tokens[0];
     return tok && (tok['tokenType'] || tok['type']) == type &&
-      (!value || tok['value'] == value) ? tokens.shift() : null;
+        (!value || tok['value'] == value) ? tokens.shift() : null;
   };
 };
+
 
 
 // CSSStyleDeclaration needs to do funky things.
 /** @constructor */
 cssom.Unsealable_ = function() {};
 goog.tagUnsealableClass(cssom.Unsealable_);
+
 
 
 /**
