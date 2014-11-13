@@ -1,30 +1,78 @@
 goog.provide('canvas');
 
+goog.require('goog.asserts');
 
-/** A write only rendering context, records commands to be replayed later. */
+goog.scope(function() {
+
+
+/**
+ * A write only rendering context, records commands to be replayed later.
+ * @export
+ * */
 canvas.RenderingContext = goog.defineClass(null, {
   /** @constructor */
   constructor: function() {
-    /** @type {!Array.<!canvas.Command_>} */
+    /** @private {boolean} */
+    this.writable_ = false;
+
+    /** @private {!Array.<!canvas.Command_>} */
     this.commands_ = [];
   },
 
   /**
-   * @param {canvas.CommandType_} command
+   * Sets the context into a writable state.
+   * @param {boolean} writable
+   */
+  setWritable: function(writable) {
+    this.writable_ = writable;
+    if (writable) {
+      this.commands_ = []; // TODO add assert here.
+    }
+  },
+
+  /**
+   * Writes the command list to a real context, and clears the command buffer.
+   * @param {!CanvasRenderingContext2D} ctx
+   */
+  write: function(ctx) {
+    // Check that we aren't writable.
+    goog.asserts.assert(!this.writable_);
+
+    for (var i = 0; i < this.commands_.length; i++) {
+      var cmd = this.commands_[i];
+      if (ContextProperty_[cmd.command]) {
+        ctx[cmd.command] = cmd.args[0];
+      } else {
+        CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
+      }
+    }
+
+  /**
+   * @param {CommandType_} command
    * @param {...*} var_args
    */
   push_: function(command, var_args) {
-    // TODO do state checking.
+    // Check that we are in a writable state.
+    goog.asserts.assert(this.writable_);
+
+    // Get & verify arguments.
     var args = Array.prototype.slice.call(arguments, 1);
+    var verifyFns = canvas.VerifyMap_[command];
+    goog.asserts.assert(args.length == verifyFns.length);
+    for (var i = 0; i < args.length; i++) {
+      verifyFns[i](args[i]);
+    }
+
+    // Push command onto list.
     this.commands_.push({command: command, args: args});
   },
 
   save: function() {
-    this.push_(canvas.CommandType_.SAVE);
+    this.push_(CommandType_.SAVE);
   },
 
   restore: function() {
-    this.push_(canvas.CommandType_.RESTORE);
+    this.push_(CommandType_.RESTORE);
   },
 
   /**
@@ -32,12 +80,12 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   scale: function(x, y) {
-    this.push_(canvas.CommandType_.SCALE, x, y);
+    this.push_(CommandType_.SCALE, x, y);
   },
 
   /** @param {number} angle */
   rotate: function(angle) {
-    this.push_(canvas.CommandType_.ROTATE, angle);
+    this.push_(CommandType_.ROTATE, angle);
   },
 
   /**
@@ -45,7 +93,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   translate: function(x, y) {
-    this.push_(canvas.CommandType_.TRANSLATE, x, y);
+    this.push_(CommandType_.TRANSLATE, x, y);
   },
 
   /**
@@ -57,7 +105,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} dy
    */
   transform: function(m11, m12, m21, m22, dx, dy) {
-    this.push_(canvas.CommandType_.TRANSFORM, m11, m12, m21, m22, dx, dy);
+    this.push_(CommandType_.TRANSFORM, m11, m12, m21, m22, dx, dy);
   },
 
   /**
@@ -69,11 +117,11 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} dy
    */
   setTransform: function(m11, m12, m21, m22, dx, dy) {
-    this.push_(canvas.CommandType_.SET_TRANSFORM, m11, m12, m21, m22, dx, dy);
+    this.push_(CommandType_.SET_TRANSFORM, m11, m12, m21, m22, dx, dy);
   },
 
   resetTransform: function() {
-    this.push_(canvas.CommandType_.RESET_TRANSFORM);
+    this.push_(CommandType_.RESET_TRANSFORM);
   },
 
   /**
@@ -83,7 +131,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} h
    */
   clearRect: function(x, y, w, h) {
-    this.push_(canvas.CommandType_.CLEAR_RECT, x, y, w, h);
+    this.push_(CommandType_.CLEAR_RECT, x, y, w, h);
   },
 
   /**
@@ -93,7 +141,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} h
    */
   fillRect: function(x, y, w, h) {
-    this.push_(canvas.CommandType_.FILL_RECT, x, y, w, h);
+    this.push_(CommandType_.FILL_RECT, x, y, w, h);
   },
 
   /**
@@ -103,15 +151,15 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} h
    */
   strokeRect: function(x, y, w, h) {
-    this.push_(canvas.CommandType_.STROKE_RECT, x, y, w, h);
+    this.push_(CommandType_.STROKE_RECT, x, y, w, h);
   },
 
   beginPath: function() {
-    this.push_(canvas.CommandType_.BEGIN_PATH);
+    this.push_(CommandType_.BEGIN_PATH);
   },
 
   closePath: function() {
-    this.push_(canvas.CommandType_.CLOSE_PATH);
+    this.push_(CommandType_.CLOSE_PATH);
   },
 
   /**
@@ -119,7 +167,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   moveTo: function(x, y) {
-    this.push_(canvas.CommandType_.MOVE_TO, x, y);
+    this.push_(CommandType_.MOVE_TO, x, y);
   },
 
   /**
@@ -127,7 +175,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   lineTo: function(x, y) {
-    this.push_(canvas.CommandType_.LINE_TO, x, y);
+    this.push_(CommandType_.LINE_TO, x, y);
   },
 
   /**
@@ -137,7 +185,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   quadraticCurveTo: function(cpx, cpy, x, y) {
-    this.push_(canvas.CommandType_.QUADRATIC_CURVE_TO, cpx, cpy, x, y);
+    this.push_(CommandType_.QUADRATIC_CURVE_TO, cpx, cpy, x, y);
   },
 
   /**
@@ -149,7 +197,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   bezierCurveTo: function(cp1x, cp1y, cp2x, cp2y, x, y) {
-    this.push_(canvas.CommandType_.BEZIER_CURVE_TO,
+    this.push_(CommandType_.BEZIER_CURVE_TO,
         cp1x, cp1y, cp2x, cp2y, x, y);
   },
 
@@ -161,7 +209,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} radius
    */
   arcTo: function(x1, y1, x2, y2, radius) {
-    this.push_(canvas.CommandType_.ARC_TO, x1, y1, x2, y2, radius);
+    this.push_(CommandType_.ARC_TO, x1, y1, x2, y2, radius);
   },
 
   /**
@@ -171,7 +219,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} h
    */
   rect: function(x, y, w, h) {
-    this.push_(canvas.CommandType_.RECT, x, y, w, h);
+    this.push_(CommandType_.RECT, x, y, w, h);
   },
 
   /**
@@ -183,20 +231,20 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {boolean=} opt_anticlockwise
    */
   arc: function(x, y, radius, startAngle, endAngle, opt_anticlockwise) {
-    this.push_(canvas.CommandType_.ARC,
+    this.push_(CommandType_.ARC,
         x, y, radius, startAngle, endAngle, opt_anticlockwise);
   },
 
   fill: function() {
-    this.push_(canvas.CommandType_.FILL);
+    this.push_(CommandType_.FILL);
   },
 
   stroke: function() {
-    this.push_(canvas.CommandType_.STROKE);
+    this.push_(CommandType_.STROKE);
   },
 
   clip: function() {
-    this.push_(canvas.CommandType_.CLIP);
+    this.push_(CommandType_.CLIP);
   },
 
   /**
@@ -206,7 +254,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number=} opt_maxWidth
    */
   fillText: function(text, x, y, opt_maxWidth) {
-    this.push_(canvas.CommandType_.FILL_TEXT, text, x, y, opt_maxWidth);
+    this.push_(CommandType_.FILL_TEXT, text, x, y, opt_maxWidth);
   },
 
   /**
@@ -216,84 +264,82 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number=} opt_maxWidth
    */
   strokeText: function(text, x, y, opt_maxWidth) {
-    this.push_(canvas.CommandType_.STROKE_TEXT, text, x, y, opt_maxWidth);
+    this.push_(CommandType_.STROKE_TEXT, text, x, y, opt_maxWidth);
   },
 
   /** @param {!Array<number>} segments */
   setLineDash: function(segments) {
-    this.push_(canvas.CommandType_.LINE_DASH, segments);
+    this.push_(CommandType_.LINE_DASH, segments);
   },
 
   /** @param {number} alpha */
   setAlpha: function(alpha) {
-    this.push_(canvas.CommandType_.ALPHA, alpha);
+    this.push_(CommandType_.ALPHA, alpha);
   },
 
-  /**
-   * @param {number} compositeOperation
-   */
+  /** @param {number} compositeOperation */
   setCompositeOperation: function(compositeOperation) {
-    this.push_(canvas.CommandType_.COMPOSITE_OPERATION, compositeOperation);
+    this.push_(CommandType_.COMPOSITE_OPERATION, compositeOperation);
   },
 
   /** @param {number} shadowOffsetX */
   setShadowOffsetX: function(shadowOffsetX) {
-    this.push_(canvas.CommandType_.SHADOW_OFFSET_X, shadowOffsetX);
+    this.push_(CommandType_.SHADOW_OFFSET_X, shadowOffsetX);
   },
 
   /** @param {number} shadowOffsetY */
   setShadowOffsetY: function(shadowOffsetY) {
-    this.push_(canvas.CommandType_.SHADOW_OFFSET_Y, shadowOffsetY);
+    this.push_(CommandType_.SHADOW_OFFSET_Y, shadowOffsetY);
   },
 
   /** @param {number} shadowBlur */
   setShadowBlur: function(shadowBlur) {
-    this.push_(canvas.CommandType_.SHADOW_BLUR, shadowBlur);
+    this.push_(CommandType_.SHADOW_BLUR, shadowBlur);
   },
 
   /** @param {string} shadowColor */
   setShadowColor: function(shadowColor) {
-    this.push_(canvas.CommandType_.SHADOW_COLOR, shadowColor);
+    this.push_(CommandType_.SHADOW_COLOR, shadowColor);
   },
 
   /** @param {number} lineWidth */
   setLineWidth: function(lineWidth) {
-    this.push_(canvas.CommandType_.LINE_WIDTH, lineWidth);
+    this.push_(CommandType_.LINE_WIDTH, lineWidth);
   },
 
   /** @param {string} lineCap */
   setLineCap: function(lineCap) {
-    this.push_(canvas.CommandType_.LINE_CAP, lineCap);
+    this.push_(CommandType_.LINE_CAP, lineCap);
   },
 
   /** @param {string} lineJoin */
   setLineJoin: function(lineJoin) {
-    this.push_(canvas.CommandType_.LINE_JOIN, lineJoin);
+    this.push_(CommandType_.LINE_JOIN, lineJoin);
   },
 
   /** @param {number} miterLimit */
   setMiterLimit: function(miterLimit) {
-    this.push_(canvas.CommandType_.MITER_LIMIT, miterLimit);
+    this.push_(CommandType_.MITER_LIMIT, miterLimit);
   },
 
   /** @param {string} font */
   setFont: function(font) {
-    this.push_(canvas.CommandType_.FONT, font);
+    this.push_(CommandType_.FONT, font);
   },
 
   /** @param {string} textAlign */
   setTextAlign: function(textAlign) {
-    this.push_(canvas.CommandType_.TEXT_ALIGN, textAlign);
+    this.push_(CommandType_.TEXT_ALIGN, textAlign);
   },
 
   /** @param {string} textBaseline */
   setTextBaseline: function(textBaseline) {
-    this.push_(canvas.CommandType_.TEXT_BASELINE, textBaseline);
+    this.push_(CommandType_.TEXT_BASELINE, textBaseline);
   }
 });
 
 
-/** @typedef {{command: canvas.CommandType_, args: !Array<*>}} */
+/** @typedef {{command: CommandType_, args: !Array<*>}} */
 canvas.Command_;
 
 
@@ -301,44 +347,161 @@ canvas.Command_;
  * @enum {string}
  * @private
  */
-canvas.CommandType_ = {
+var CommandType_ = {
   SAVE: 'save',
   RESTORE: 'restore',
   SCALE: 'scale',
   ROTATE: 'rotate',
   TRANSLATE: 'translate',
   TRANSFORM: 'transform',
-  SET_TRANSFORM: 'set_transform',
-  RESET_TRANSFORM: 'reset_transform',
-  CLEAR_RECT: 'clear_rect',
-  FILL_RECT: 'fill_rect',
-  STROKE_RECT: 'stroke_rect',
-  BEGIN_PATH: 'begin_path',
-  CLOSE_PATH: 'close_path',
-  MOVE_TO: 'move_to',
-  LINE_TO: 'line_to',
-  QUADRATIC_CURVE_TO: 'quadratic_curve_to',
-  BEZIER_CURVE_TO: 'bezier_curve_to',
-  ARC_TO: 'arc_to',
+  SET_TRANSFORM: 'setTransform',
+  RESET_TRANSFORM: 'resetTransform',
+  CLEAR_RECT: 'clearRect',
+  FILL_RECT: 'fillRect',
+  STROKE_RECT: 'strokeRect',
+  BEGIN_PATH: 'beginPath',
+  CLOSE_PATH: 'closePath',
+  MOVE_TO: 'moveTo',
+  LINE_TO: 'lineTo',
+  QUADRATIC_CURVE_TO: 'quadraticCurveTo',
+  BEZIER_CURVE_TO: 'bezierCurveTo',
+  ARC_TO: 'arcTo',
   RECT: 'rect',
   ARC: 'arc',
   FILL: 'fill',
   STROKE: 'stroke',
   CLIP: 'clip',
-  FILL_TEXT: 'fill_text',
-  STROKE_TEXT: 'stroke_text',
-  LINE_DASH: 'line_dash',
-  ALPHA: 'alpha',
-  COMPOSITE_OPERATION: 'composite_operation',
-  SHADOW_OFFSET_X: 'shadow_offset_x',
-  SHADOW_OFFSET_Y: 'shadow_offset_y',
-  SHADOW_BLUR: 'shadow_blur',
-  SHADOW_COLOR: 'shadow_color',
-  LINE_WIDTH: 'line_width',
-  LINE_CAP: 'line_cap',
-  LINE_JOIN: 'line_join',
-  MITER_LIMIT: 'miter_limit',
+  FILL_TEXT: 'fillText',
+  STROKE_TEXT: 'strokeText',
+  LINE_DASH: 'lineDash',
+  ALPHA: 'globalAlpha',
+  COMPOSITE_OPERATION: 'globalCompositeOperation',
+  SHADOW_OFFSET_X: 'shadowOffsetX',
+  SHADOW_OFFSET_Y: 'shadowOffsetY',
+  SHADOW_BLUR: 'shadowBlur',
+  SHADOW_COLOR: 'shadowColor',
+  LINE_WIDTH: 'lineWidth',
+  LINE_CAP: 'lineCap',
+  LINE_JOIN: 'lineJoin',
+  MITER_LIMIT: 'miterLimit',
   FONT: 'font',
-  TEXT_ALIGN: 'text_align',
-  TEXT_BASELINE: 'text_baseline'
+  TEXT_ALIGN: 'textAlign',
+  TEXT_BASELINE: 'textBaseline'
 };
+
+
+/**
+ * @enum {boolean}
+ * @private
+ */
+var ContextProperty_ = {};
+ContextProperty_[CommandType_.ALPHA] = true;
+ContextProperty_[CommandType_.COMPOSITE_OPERATION] = true;
+ContextProperty_[CommandType_.SHADOW_OFFSET_X] = true;
+ContextProperty_[CommandType_.SHADOW_OFFSET_Y] = true;
+ContextProperty_[CommandType_.SHADOW_BLUR] = true;
+ContextProperty_[CommandType_.SHADOW_COLOR] = true;
+ContextProperty_[CommandType_.LINE_WIDTH] = true;
+ContextProperty_[CommandType_.LINE_CAP] = true;
+ContextProperty_[CommandType_.LINE_JOIN] = true;
+ContextProperty_[CommandType_.MITER_LIMIT] = true;
+ContextProperty_[CommandType_.FONT] = true;
+ContextProperty_[CommandType_.TEXT_ALIGN] = true;
+ContextProperty_[CommandType_.TEXT_BASELINE] = true;
+
+
+/**
+ * @param {*} num
+ * @private
+ */
+var isNum_ = function(num) {
+  goog.asserts.assertNumber(num);
+};
+
+
+/**
+ * @param {*} num
+ * @private
+ */
+var isNumOrUndefined_ = function(num) {
+  goog.asserts.assert(!goog.isDef(num) || goog.isNumber(num));
+};
+
+
+/**
+ * @param {*} str
+ * @private
+ */
+var isString_ = function(str) {
+  goog.asserts.assertString(str);
+};
+
+
+/**
+ * @param {*} numArr
+ * @private
+ */
+var isNumArray_ = function(numArr) {
+  goog.asserts.assertArray(numArr);
+  for (var i = 0; i < numArr.length; i++) {
+    goog.asserts.assertNumber(numArr[i]);
+  }
+};
+
+
+/**
+ * @type {!Object<CommandType_, !Array<function(*): boolean>>}
+ * @private
+ */
+canvas.VerifyMap_ = {};
+canvas.VerifyMap_[CommandType_.SAVE] = [];
+canvas.VerifyMap_[CommandType_.RESTORE] = [];
+canvas.VerifyMap_[CommandType_.SCALE] = [isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.ROTATE] = [isNum_];
+canvas.VerifyMap_[CommandType_.TRANSLATE] = [isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.TRANSFORM] =
+    [isNum_, isNum_, isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.SET_TRANSFORM] =
+    [isNum_, isNum_, isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.RESET_TRANSFORM] = [];
+canvas.VerifyMap_[CommandType_.CLEAR_RECT] = [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.FILL_RECT] = [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.STROKE_RECT] = [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.BEGIN_PATH] = [];
+canvas.VerifyMap_[CommandType_.CLOSE_PATH] = [];
+canvas.VerifyMap_[CommandType_.MOVE_TO] = [isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.LINE_TO] = [isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.QUADRATIC_CURVE_TO] =
+    [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.BEZIER_CURVE_TO] =
+    [isNum_, isNum_, isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.ARC_TO] =
+    [isNum_, isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.RECT] = [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_.RECT] =
+    [isNum_, isNum_, isNum_, isNum_, isNumOrUndefined_];
+canvas.VerifyMap_[CommandType_.ARC] =
+    [isNum_, isNum_, isNum_, isNum_, isNum_, isNumOrUndefined_];
+canvas.VerifyMap_[CommandType_.FILL] = [];
+canvas.VerifyMap_[CommandType_.STROKE] = [];
+canvas.VerifyMap_[CommandType_.CLIP] = [];
+canvas.VerifyMap_[CommandType_.FILL_TEXT] =
+    [isString_, isNum_, isNum_, isNumOrUndefined_];
+canvas.VerifyMap_[CommandType_.STROKE_TEXT] =
+    [isString_, isNum_, isNum_, isNumOrUndefined_];
+canvas.VerifyMap_[CommandType_.LINE_DASH] = [isNumArray_];
+canvas.VerifyMap_[CommandType_.ALPHA] = [isNum_];
+canvas.VerifyMap_[CommandType_.COMPOSITE_OPERATION] = [isNum_];
+canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_X] = [isNum_];
+canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_Y] = [isNum_];
+canvas.VerifyMap_[CommandType_.SHADOW_BLUR] = [isNum_];
+canvas.VerifyMap_[CommandType_.SHADOW_COLOR] = [isString_];
+canvas.VerifyMap_[CommandType_.LINE_WIDTH] = [isNum_];
+canvas.VerifyMap_[CommandType_.LINE_CAP] = [isString_];
+canvas.VerifyMap_[CommandType_.LINE_JOIN] = [isString_];
+canvas.VerifyMap_[CommandType_.MITER_LIMIT] = [isNum_];
+canvas.VerifyMap_[CommandType_.FONT] = [isString_];
+canvas.VerifyMap_[CommandType_.TEXT_ALIGN] = [isString_];
+canvas.VerifyMap_[CommandType_.TEXT_BASELINE] = [isString_];
+
+});  // goog.scope
