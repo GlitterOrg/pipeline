@@ -1,12 +1,14 @@
 goog.provide('css');
 
 goog.require('cssom');
+goog.require('goog.functions');
 
 
 /**
  * Apply a raw CSS string to the DOM.
  * TODO setup mutation observers.
  * @param {string} str The raw CSS string.
+ * @export
  */
 css.exec = function(str) {
   var stylesheet = cssom.parse(str);
@@ -28,9 +30,10 @@ css.exec_ = function(stylesheet) {
 
 
 /**
- * Applies TODO
+ * Applies a matching rules within a stylesheet to an element.
  * @param {!cssom.CSSStyleSheet} stylesheet
  * @param {!Element} el
+ * @private
  */
 css.applyRules_ = function(stylesheet, el) {
   var rules = css.findRules_(stylesheet, el);
@@ -38,10 +41,9 @@ css.applyRules_ = function(stylesheet, el) {
   var importantStyle = {};
 
   for (var i = 0; i < rules.length; i++) {
-    var styleObj = rules;
-    var rule = rules[i].style.keys_;
-    for (var j = 0; j < rule.length; j++) {
-      var key = rule[j];
+    var keys = rules[i].style.keys();
+    for (var j = 0; j < keys.length; j++) {
+      var key = keys[j];
       if (rules[i].style.getPropertyPriority(key) == 'important') {
         importantStyle[key] = rules[i].style[key];
       } else {
@@ -71,16 +73,20 @@ css.applyRules_ = function(stylesheet, el) {
  * Finds a list of rules to be applied (in sorted order).
  * @param {!cssom.CSSStyleSheet} stylesheet
  * @param {!Element} el
- * @return {!Array.<!cssom.CSSRules}
+ * @return {!Array.<!cssom.CSSStyleRule>}
  * @private
  */
 css.findRules_ = function(stylesheet, el) {
   var rules = stylesheet.cssRules;
 
   // Find matching rules.
-  var matching = rules.filter(function(rule) {
-    return el.matches(rule.selectorText);
-  });
+  var matching = /** @type {!Array.<cssom.CSSStyleRule>} */ (rules).filter(
+      function(rule) {
+        // TODO: add rename matchesSelector to matches in closure externs.
+        return (rule.type == cssom.CSSRule.STYLE_RULE) &&
+            el['matches'](
+                (/** @type {cssom.CSSStyleRule} */ (rule)).selectorText);
+      });
 
   // Sort rules in order.
   return matching.sort(function(a, b) {
@@ -113,9 +119,9 @@ css.calcSpecificity_ = function(prelude, el) {
 
 
 /**
- * @param {!Array.<!Object.<string>>} prelude
+ * @param {!Array.<!Object>} prelude
  * @param {!Element=} opt_el
- * @return {number}
+ * @return {!Array.<number>}
  * @private
  */
 css.calcSpecificityInternal_ = function(prelude, opt_el) {
@@ -173,11 +179,13 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
 
         // Filter by selectors that match.
         var matchingSelectors = selectors.filter(function(selector) {
-          return opt_el.matches(cssom.collapseTokens(selector));
+          // TODO: add rename matchesSelector to matches in closure externs.
+          return opt_el['matches'](cssom.collapseTokens(selector));
         });
 
         // Transform to list of specificities.
-        var specificities = matchingSelectors.map(css.calcSpecificityInternal_);
+        var specificities = matchingSelectors.map(
+            goog.functions.lock(css.calcSpecificityInternal_, 1));
 
         // Find greatest specificity.
         var tmp;
