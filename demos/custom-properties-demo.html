@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<link rel="import" href="src/css-poly.html"> 
-<script src='glitter.js'></script>
+<link rel="import" href="../src/css-poly.html">
+<script src='../src/glitter.js'></script>
 <css-poly>
 #foo {
   width: 100px;
@@ -14,6 +14,7 @@
 registerPropertyHandler('fixup', {
   apply: function(mutation) {
     if (mutation.value == 'gradient') {
+      console.log(mutation);
       var bgc = /rgb\(([0-9]+), ([0-9]+), ([0-9]+)\)/.exec(mutation.computed.backgroundColor);
       var r = Number(bgc[1]);
       var g = Number(bgc[2]);
@@ -21,7 +22,7 @@ registerPropertyHandler('fixup', {
       var endR = Math.min(255, r + 100);
       var endG = Math.min(255, g + 100);
       var endB = Math.min(255, b + 100);
-      var background = 'linear-gradient(' + mutation.computed.backgroundColor + ', rgb(' + endR + ', ' + endG + ', ' + endB + '))'
+      var background = 'linear-gradient(' + mutation.result.backgroundColor + ', rgb(' + endR + ', ' + endG + ', ' + endB + '))'
       mutation.result.background = background;
     }
   }

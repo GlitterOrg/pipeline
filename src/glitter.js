@@ -28,7 +28,7 @@ function _handleCustomPropertiesForElement(el) {
   for (name in _customProperties) {
     if (_customProperties[name].initial !== undefined)
       if (el.style[name] == undefined) {
-	el.style[name] = _customProperties[name].initial;
+        el.style[name] = _customProperties[name].initial;
       }
   }
   for (name in _customProperties) {
@@ -37,7 +37,8 @@ function _handleCustomPropertiesForElement(el) {
     // TODO: Work out how to order these for complex property sets
     _customProperties[name].apply({
       value: el.style[name],
-      result: el.style
+      result: el.style,
+      computed: getComputedStyle(el)
     });
   }
 }
@@ -46,7 +47,7 @@ var _scrollers = [];
 var scrolled = false;
 
 function isAScroller(element) {
-  if (_scrollers.length == 0) 
+  if (_scrollers.length == 0)
     requestAnimationFrame(_processScrollers);
   element._deltas = [];
   element._position = 0;
@@ -63,14 +64,14 @@ function isAScroller(element) {
 function _processScrollers() {
   requestAnimationFrame(_processScrollers);
 
-  if (!scrolled) 
+  if (!scrolled)
     return;
   scrolled = false;
 
   for (var i = 0; i < _scrollers.length; i++) {
     var computedDelta = _scrollers[i]._deltas.reduce(function(a, b) { return a + b; }, 0);
     var oldOffset = _scrollers[i]._position;
-    _scrollers[i]._position -= computedDelta;  
+    _scrollers[i]._position -= computedDelta;
     _scrollers[i]._position = Math.min(Math.max(0, _scrollers[i]._position), 1600);
 
     _scrollers[i].style.scrollDeltas = _scrollers[i]._deltas;
@@ -98,14 +99,14 @@ Element.prototype.animate = function(keyframes, timing) {
     var shadowKeyframe = {};
     for (var property in keyframe) {
       if (property in _customProperties) {
-	shadowKeyframe[property] = keyframe[property];
+        shadowKeyframe[property] = keyframe[property];
       }
     }
     shadowKeyframes.push(shadowKeyframe);
   }
 
   var player = _animate.call(this, keyframes, timing);
-  requestAnimationFrame(_tickAnimation(this, player, shadowKeyframes, 
+  requestAnimationFrame(_tickAnimation(this, player, shadowKeyframes,
       timing.duration !== undefined ? timing.duration : timing));
 }
 

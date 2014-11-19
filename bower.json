@@ -15,8 +15,5 @@
     "compiler-latest": "http://dl.google.com/closure-compiler/compiler-latest.zip",
     "parse-css": "https://github.com/tabatkins/parse-css.git#master",
     "polymer-dev": "Polymer/polymer-dev#~0.4.1"
-  },
-  "resolutions": {
-    "parse-css": "master"
   }
 }
