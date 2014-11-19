@@ -1,0 +1,130 @@
+<html>
+  <head>
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="deps.js"></script>
+    <script>goog.require('paint');</script>
+  </head>
+  <body>
+    <div style="width: 100px; height: 100px; cursor: pointer; display: inline-block; color: #666; font-size:14px; background: #fafafa; box-shadow: 0 2px 10px 0 rgba(0,0,0,.16); border-radius: 3px; -webkit-user-select: none;">BUTTON</div>
+    <script>
+      var WAVE_MAX_R = 150;
+
+      var waveRadiusFn = function(touchDownMs, touchUpMs, ww, hh) {
+        // Convert from ms to s
+        var touchDown = touchDownMs / 1000;
+        var touchUp = touchUpMs / 1000;
+        var totalElapsed = touchDown + touchUp;
+        // use diagonal size of container to avoid floating point math sadness
+        var waveRadius = Math.min(Math.sqrt(ww * ww + hh * hh), WAVE_MAX_R) * 1.1 + 5;
+        var duration = 1.1 - .2 * (waveRadius / WAVE_MAX_R);
+        var tt = (totalElapsed / duration);
+        var size = waveRadius * (1 - Math.pow(80, -tt));
+        return Math.abs(size);
+      };
+
+      var OPACITY_INITIAL = 0.25;
+      var OPACITY_DECAY = 0.8;
+
+      var waveOpacityFn = function(td, tu) {
+        // Convert from ms to s.
+        var touchDown = td / 1000;
+        var touchUp = tu / 1000;
+        var totalElapsed = touchDown + touchUp;
+        if (tu <= 0) {  // before touch up
+          return OPACITY_INITIAL;
+        }
+        return Math.max(0, OPACITY_INITIAL - touchUp * OPACITY_DECAY);
+      };
+
+      var cX;
+      var cY;
+      var animTime;
+      var hasRaf;
+      var waves = [];
+
+      var el = document.body.children[0];
+
+      var onRaf = function() {
+        if (waves.length) el.invalidate();
+        hasRaf = window.requestAnimationFrame(onRaf);
+      };
+
+      el.onBackground = function(ctx) {
+        var w = ctx.width;
+        var h = ctx.height;
+        var remove = [];
+
+        for (var i = 0; i < waves.length; i++) {
+          var wave = waves[i];
+
+          if (wave['pointerDown'] > 0) {
+            wave['tDown'] = window.performance.now() - wave['pointerDown'];
+          }
+
+          if (wave['pointerUp'] > 0) {
+            wave['tUp'] = window.performance.now() - wave['pointerUp'];
+          }
+
+          var tDown = wave['tDown'];
+          var tUp = wave['tUp'];
+
+          var radius = waveRadiusFn(tDown, tUp, w, h);
+          var waveAlpha = waveOpacityFn(tDown, tUp);
+
+          ctx.setCompositeOperation('darken');
+          ctx.setFillColor('rgba(0,255,255,'+waveAlpha+')');
+          ctx.beginPath();
+          ctx.arc(wave['cX'], wave['cY'], radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (radius >= WAVE_MAX_R) {
+            remove.push(wave);
+          }
+        }
+
+        for (var i = 0; i < remove.length; i++) {
+          var idx = waves.indexOf(remove[i]);
+          waves.splice(idx, 1);
+        }
+      };
+
+
+      el.addEventListener('mousedown', function(evt) {
+        var wave = {
+          'isPointerDown': true,
+          'tDown': 0,
+          'tUp': 0,
+          'pointerDown': window.performance.now(),
+          'pointerUp': 0,
+          'waveMax': 0,
+          'cX': evt.clientX,
+          'cY': evt.clientY
+        };
+
+        waves.push(wave);
+        if (!hasRaf) hasRaf = window.requestAnimationFrame(onRaf);
+      });
+
+      el.addEventListener('mousemove', function(evt) {
+        for (var i = 0; i < waves.length; i++) {
+          if (waves[i]['isPointerDown']) {
+            waves[i]['cX'] = evt.clientX;
+            waves[i]['cY'] = evt.clientY;
+          }
+        }
+        if (!hasRaf) hasRaf = window.requestAnimationFrame(onRaf);
+      });
+
+      el.addEventListener('mouseup', function(evt) {
+        for (var i = 0; i < waves.length; i++) {
+          if (waves[i]['isPointerDown']) {
+            waves[i]['isPointerDown'] = false;
+            waves[i]['pointerUp'] = window.performance.now();
+            waves[i]['pointerDown'] = 0;
+          }
+        }
+        if (!hasRaf) hasRaf = window.requestAnimationFrame(onRaf);
+      });
+    </script>
+  </body>
+</html>

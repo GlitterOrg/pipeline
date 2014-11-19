@@ -17,6 +17,12 @@ canvas.RenderingContext = goog.defineClass(null, {
 
     /** @private {!Array.<!canvas.Command_>} */
     this.commands_ = [];
+
+    /** @type {number} */
+    this.width = 0;
+
+    /** @type {number} */
+    this.height = 0;
   },
 
   /**
@@ -28,6 +34,16 @@ canvas.RenderingContext = goog.defineClass(null, {
     if (writable) {
       this.commands_ = []; // TODO add assert here.
     }
+  },
+
+  /**
+   * Sets the current dimensions of the context.
+   * @param {number} width
+   * @param {number} height
+   */
+  setDimensions: function(width, height) {
+    this.width = width;
+    this.height = height;
   },
 
   /**
@@ -46,6 +62,7 @@ canvas.RenderingContext = goog.defineClass(null, {
         CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
       }
     }
+  },
 
   /**
    * @param {CommandType_} command
@@ -302,6 +319,11 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.push_(CommandType_.SHADOW_COLOR, shadowColor);
   },
 
+  /** @param {string} fillColor */
+  setFillColor: function(fillColor) {
+    this.push_(CommandType_.FILL_COLOR, fillColor);
+  },
+
   /** @param {number} lineWidth */
   setLineWidth: function(lineWidth) {
     this.push_(CommandType_.LINE_WIDTH, lineWidth);
@@ -380,6 +402,7 @@ var CommandType_ = {
   SHADOW_OFFSET_Y: 'shadowOffsetY',
   SHADOW_BLUR: 'shadowBlur',
   SHADOW_COLOR: 'shadowColor',
+  FILL_COLOR: 'fillStyle',
   LINE_WIDTH: 'lineWidth',
   LINE_CAP: 'lineCap',
   LINE_JOIN: 'lineJoin',
@@ -401,6 +424,7 @@ ContextProperty_[CommandType_.SHADOW_OFFSET_X] = true;
 ContextProperty_[CommandType_.SHADOW_OFFSET_Y] = true;
 ContextProperty_[CommandType_.SHADOW_BLUR] = true;
 ContextProperty_[CommandType_.SHADOW_COLOR] = true;
+ContextProperty_[CommandType_.FILL_COLOR] = true;
 ContextProperty_[CommandType_.LINE_WIDTH] = true;
 ContextProperty_[CommandType_.LINE_CAP] = true;
 ContextProperty_[CommandType_.LINE_JOIN] = true;
@@ -491,11 +515,12 @@ canvas.VerifyMap_[CommandType_.STROKE_TEXT] =
     [isString_, isNum_, isNum_, isNumOrUndefined_];
 canvas.VerifyMap_[CommandType_.LINE_DASH] = [isNumArray_];
 canvas.VerifyMap_[CommandType_.ALPHA] = [isNum_];
-canvas.VerifyMap_[CommandType_.COMPOSITE_OPERATION] = [isNum_];
+canvas.VerifyMap_[CommandType_.COMPOSITE_OPERATION] = [isString_];
 canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_X] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_Y] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_BLUR] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_COLOR] = [isString_];
+canvas.VerifyMap_[CommandType_.FILL_COLOR] = [isString_];
 canvas.VerifyMap_[CommandType_.LINE_WIDTH] = [isNum_];
 canvas.VerifyMap_[CommandType_.LINE_CAP] = [isString_];
 canvas.VerifyMap_[CommandType_.LINE_JOIN] = [isString_];
