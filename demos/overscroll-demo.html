@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <link rel="import" href="../src/css-poly.html">
+<script src='../src/paint.js'></script>
 <script src='../src/glitter.js'></script>
 <css-poly>
 #contents {
@@ -46,13 +47,12 @@
 <script>
 registerPropertyHandler('scrollOut', {
   apply: function(mutation) {
-    console.log(mutation);
     if (mutation.value == 'glow' && mutation.result.computedScrollDelta !== undefined) {
       if (mutation.result.overscroll == undefined)
-	mutation.result.overscroll = 0;
+        mutation.result.overscroll = 0;
       mutation.result.overscroll += mutation.result.computedScrollDelta;
       if (mutation.result.overscroll < 0) {
-	mutation.result.scrollOffset = 0;
+        mutation.result.scrollOffset = 0;
       }
     }
   }
@@ -75,6 +75,6 @@ isAScroller(contents);
 PolymerGestures.addEventListener(container, 'trackend', function(e) {
   if (contents.style.overscroll < 0)
     contents.animate([{overscroll: contents.style.overscroll}, {overscroll: 0}],
-	-contents.style.overscroll * 2);
+        -contents.style.overscroll * 2);
 });
 </script>

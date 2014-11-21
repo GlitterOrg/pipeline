@@ -1,6 +1,8 @@
 /**
  * Hook css.exec to call custom properties handler.
  */
+
+goog.require('paint');
 var _baseExec = css.exec;
 css.exec = function(str) {
   _baseExec(str);
@@ -44,11 +46,8 @@ function _handleCustomPropertiesForElement(el) {
 }
 
 var _scrollers = [];
-var scrolled = false;
 
 function isAScroller(element) {
-  if (_scrollers.length == 0)
-    requestAnimationFrame(_processScrollers);
   element._deltas = [];
   element._position = 0;
   //element.addEventListener('wheel', function(e) {
@@ -56,35 +55,50 @@ function isAScroller(element) {
   //});
   PolymerGestures.addEventListener(element.parentElement, 'track', function(e) {
     element._deltas.push(e.ddy);
-    scrolled = true;
+    invalidate_(element);
   });
   _scrollers.push(element);
 }
 
-function _processScrollers() {
-  requestAnimationFrame(_processScrollers);
+var taskQueued = false;
+var invalidatedElements_ = [];
 
-  if (!scrolled)
-    return;
-  scrolled = false;
-
-  for (var i = 0; i < _scrollers.length; i++) {
-    var computedDelta = _scrollers[i]._deltas.reduce(function(a, b) { return a + b; }, 0);
-    var oldOffset = _scrollers[i]._position;
-    _scrollers[i]._position -= computedDelta;
-    _scrollers[i]._position = Math.min(Math.max(0, _scrollers[i]._position), 1600);
-
-    _scrollers[i].style.scrollDeltas = _scrollers[i]._deltas;
-    _scrollers[i].style.oldScrollOffset = oldOffset;
-    _scrollers[i].style.computedScrollDelta = -computedDelta;
-    _scrollers[i].style.scrollOffset = _scrollers[i]._position;
-    _scrollers[i].style.scrollOffset = _scrollers[i]._position;
-    _handleCustomPropertiesForElement(_scrollers[i]);
-    _scrollers[i]._position = _scrollers[i].style.scrollOffset;
-
-    _scrollers[i].style.transform = 'translateY(' + (-_scrollers[i]._position) + 'px)';
-    _scrollers[i]._deltas = [];
+function invalidate_(element) {
+  if (taskQueued == false) {
+    paint.enqueueMicroTask_(handleInvalidatedElements_);
+    taskQueued = true;
   }
+  invalidatedElements_.push(element);
+}
+
+function handleInvalidatedElements_() {
+  taskQueued = false;
+  for (var i = 0; i < invalidatedElements_.length; i++) {
+    _pipeline(invalidatedElements_[i]);
+  }
+}
+
+function _pipeline(element) {
+  _processScroller(element);
+  paint._paint(element);
+}
+
+function _processScroller(element) {
+  var computedDelta = element._deltas.reduce(function(a, b) { return a + b; }, 0);
+  var oldOffset = element._position;
+  element._position -= computedDelta;
+  element._position = Math.min(Math.max(0, element._position), 1600);
+
+  element.style.scrollDeltas = element._deltas;
+  element.style.oldScrollOffset = oldOffset;
+  element.style.computedScrollDelta = -computedDelta;
+  element.style.scrollOffset = element._position;
+  element.style.scrollOffset = element._position;
+  _handleCustomPropertiesForElement(element);
+  element._position = element.style.scrollOffset;
+
+  element.style.transform = 'translateY(' + (-element._position) + 'px)';
+  element._deltas = [];
 }
 
 function isolate(f, context) {
@@ -120,7 +134,7 @@ function _tickAnimation(element, player, keyframes, duration) {
     if (player.currentTime < duration) {
       requestAnimationFrame(tick);
     }
-    _handleCustomPropertiesForElement(element);
+    invalidate_(element);
   }
   return tick;
 }

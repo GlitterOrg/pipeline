@@ -9,6 +9,10 @@
     <script>
       var WAVE_MAX_R = 150;
 
+      registerPropertyHandler('wave', {
+        animateAs: 'list<length number length length>'
+      });
+
       var waveRadiusFn = function(touchDownMs, touchUpMs, ww, hh) {
         // Convert from ms to s
         var touchDown = touchDownMs / 1000;
@@ -43,11 +47,6 @@
       var waves = [];
 
       var el = document.body.children[0];
-
-      var onRaf = function() {
-        if (waves.length) el.invalidate();
-        hasRaf = window.requestAnimationFrame(onRaf);
-      };
 
       el.onBackground = function(ctx) {
         var w = ctx.width;

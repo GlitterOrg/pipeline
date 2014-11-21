@@ -10,11 +10,11 @@ Object.defineProperty(Element.prototype, 'onBackground', {
     // Begin watching this element.
     // NOTE: will not unwatch.
     paint.els_.push(this);
-
+/*
     if (!paint.hasRaf_) {
       paint.hasRaf_ = !!goog.global.requestAnimationFrame(paint.onRaf_);
     }
-
+*/
     this._onBackground = fn;
   }
 });
@@ -43,7 +43,7 @@ paint.els_ = [];
  */
 paint.onRaf_ = function() {
   paint.enqueueMicroTask_(paint.microTask_);
-  goog.global.requestAnimationFrame(paint.onRaf_);
+  //goog.global.requestAnimationFrame(paint.onRaf_);
 };
 
 
@@ -61,7 +61,6 @@ paint.enqueueMicroTask_ = function(task) {
   var p = new Promise(function(resolve) { resolve(undefined); });
   p.then(task);
 };
-
 
 /**
  * Checks elements which have had a custom paint callback registered, and paints
@@ -110,31 +109,33 @@ paint.microTask_ = function() {
     paint.globalDirty_ = false;
 
     // Paint the elements!
-    for (var i = 0; i < paint.els_.length; i++) {
-      var el = paint.els_[i];
-
-      // Skip if nothing has changed.
-      if (!el._needsPaint) continue;
-
-      // Clear the background by asking for a 0x0 context.
-      el.style.backgroundImage = '-webkit-canvas(a' + i + ')';
-      document.getCSSCanvasContext('2d', 'a' + i, 0, 0);
-
-      // Get the actual context.
-      var ctx = document.getCSSCanvasContext(
-          '2d', 'a' + i, el._width, el._height);
-
-      // Create write-only context if needed.
-      if (!el._ctx) el._ctx = new canvas.RenderingContext();
-
-      // Record custom paint commands.
-      el._ctx.setWritable(true);
-      el._ctx.setDimensions(el._width, el._height);
-      el._onBackground.call(null, el._ctx);
-      el._ctx.setWritable(false);
-
-      // Write to actual canvas.
-      el._ctx.write(ctx);
+    for (var i = 0; i < paint.els_.length; i++) {i
+      paint._paint(els_[i]);
     }
   }
+};
+
+paint._paint = function(el) {
+  // Skip if nothing has changed.
+  if (!el._needsPaint) return;
+
+  // Clear the background by asking for a 0x0 context.
+  el.style.backgroundImage = '-webkit-canvas(a' + i + ')';
+  document.getCSSCanvasContext('2d', 'a' + i, 0, 0);
+
+  // Get the actual context.
+  var ctx = document.getCSSCanvasContext(
+      '2d', 'a' + i, el._width, el._height);
+
+  // Create write-only context if needed.
+  if (!el._ctx) el._ctx = new canvas.RenderingContext();
+
+  // Record custom paint commands.
+  el._ctx.setWritable(true);
+  el._ctx.setDimensions(el._width, el._height);
+  el._onBackground.call(null, el._ctx);
+  el._ctx.setWritable(false);
+
+  // Write to actual canvas.
+  el._ctx.write(ctx);
 };
