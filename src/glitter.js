@@ -129,7 +129,14 @@ function _tickAnimation(element, player, keyframes, duration) {
     var f = player.currentTime / duration;
     // TODO: Do this properly. Deal with multiple keyframes. Respect animateAs declarations.
     for (var property in keyframes[0]) {
-      element.style[property] = (1 - f) * keyframes[0][property] + f * keyframes[1][property];
+      switch (_customProperties[property].animateAs) {
+        case 'number':
+          element.style[property] = (1 - f) * keyframes[0][property] + f * keyframes[1][property];
+          break;
+        case 'list<length number length length>':
+          console.log('yay');
+          break;
+      }
     }
     if (player.currentTime < duration) {
       requestAnimationFrame(tick);
