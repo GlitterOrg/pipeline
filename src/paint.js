@@ -115,17 +115,26 @@ paint.microTask_ = function() {
   }
 };
 
+var uid = 0;
+
 paint._paint = function(el) {
   // Skip if nothing has changed.
-  if (!el._needsPaint) return;
+  if (!(el._needsPaint || el._dirty)) return;
 
+  el._width = el.clientWidth;
+  el._height = el.clientHeight;
+  
+
+  if (!el._paintName)
+    el._paintName = 'a' + (uid++);
+ 
   // Clear the background by asking for a 0x0 context.
-  el.style.backgroundImage = '-webkit-canvas(a' + i + ')';
-  document.getCSSCanvasContext('2d', 'a' + i, 0, 0);
+  el.style.backgroundImage = '-webkit-canvas(' + el._paintName + ')';
+  document.getCSSCanvasContext('2d', el._paintName, 0, 0);
 
   // Get the actual context.
   var ctx = document.getCSSCanvasContext(
-      '2d', 'a' + i, el._width, el._height);
+      '2d', el._paintName, el._width, el._height);
 
   // Create write-only context if needed.
   if (!el._ctx) el._ctx = new canvas.RenderingContext();

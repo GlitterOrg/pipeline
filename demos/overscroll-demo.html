@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <link rel="import" href="../src/css-poly.html">
+<script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
 <script src='../src/paint.js'></script>
 <script src='../src/glitter.js'></script>
 <css-poly>
@@ -29,7 +30,7 @@
   -webkit-user-select: none;
 }
 </css-poly>
-<script src='bower_components/polymer-gestures/polymer-gestures.js'></script>
+<script src='../bower_components/polymer-gestures/polymer-gestures.js'></script>
 <div id='container'>
   <div id='contents'>
     <div class='contentBox' style='background: red' id='glower'></div>
@@ -50,7 +51,7 @@ registerPropertyHandler('scrollOut', {
     if (mutation.value == 'glow' && mutation.result.computedScrollDelta !== undefined) {
       if (mutation.result.overscroll == undefined)
         mutation.result.overscroll = 0;
-      mutation.result.overscroll += mutation.result.computedScrollDelta;
+      mutation.result.overscroll = Number(mutation.result.overscroll) + mutation.result.computedScrollDelta;
       if (mutation.result.overscroll < 0) {
         mutation.result.scrollOffset = 0;
       }

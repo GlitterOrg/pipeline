@@ -14,6 +14,7 @@
     "closure-library": "https://github.com/google/closure-library.git",
     "compiler-latest": "http://dl.google.com/closure-compiler/compiler-latest.zip",
     "parse-css": "https://github.com/tabatkins/parse-css.git#master",
-    "polymer-dev": "Polymer/polymer-dev#~0.4.1"
+    "polymer-dev": "Polymer/polymer-dev#~0.4.1",
+    "web-animations-next": "https://github.com/glitterOrg/web-animations-next.git#master"
   }
 }
