@@ -8,7 +8,7 @@
     <script>goog.require('paint');</script>
   </head>
   <body>
-    <div style="width: 100px; height: 100px; cursor: pointer; display: inline-block; color: #666; font-size:14px; background: #fafafa; box-shadow: 0 2px 10px 0 rgba(0,0,0,.16); border-radius: 3px; -webkit-user-select: none;">BUTTON</div>
+    <div style="width: 500px; height: 500px; cursor: pointer; display: inline-block; color: #666; font-size:14px; background: #fafafa; box-shadow: 0 2px 10px 0 rgba(0,0,0,.16); border-radius: 3px; -webkit-user-select: none;">BUTTON</div>
     <script>
       var WAVE_MAX_R = 150;
 
@@ -128,10 +128,8 @@
           var time = rp.currentTime / 1000;
           kf = updateKFs(kf, time);
           el.style.wavePosition = el.style.wavePosition + ',' + evt.clientX + ' ' + evt.clientY;
-          console.log(kf);
-          console.log(el.style.wavePosition);
         }
-        rp = el.animate(toKF(kf), {duration: 1000, easing: 'forwards'});
+        rp = el.animate(toKF(kf), {duration: 1000, fill: 'forwards'});
         el.invalidate();
         down = true;
       });
@@ -153,7 +151,7 @@
           var time = op.currentTime / 1000;
           okf = updateKFs(okf, time);
         }
-        op = el.animate(toOKF(okf), {duration: 1000, easing: 'forwards'});
+        op = el.animate(toOKF(okf), {duration: 1000, fill: 'forwards'});
         down = false;
       });
     </script>
