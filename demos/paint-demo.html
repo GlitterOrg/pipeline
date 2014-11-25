@@ -18,6 +18,7 @@
       registerPropertyHandler('waveOpacity', {
         animateAs: 'list<number>'
       });
+      registerPropertyHandler('wavePosition', {});
 
       var waveRadiusFn = function(time, ww, hh) {
         var waveRadius = Math.min(Math.sqrt(ww * ww + hh * hh), WAVE_MAX_R) * 1.1 + 5;
@@ -42,64 +43,78 @@
       var op;
       var rp;
       var kf;
+      var okf;
 
       var el = document.body.children[0];
+
+      var parseWavePositions = function(element) {
+        if (el.style.wavePosition !== undefined && el.style.wavePosition !== '') {
+          return el.style.wavePosition.split(',').map(
+            function(position) {
+              return position.split(' ').map(Number);
+            });
+        }
+        return [];
+      }
 
       el.onBackground = function(ctx) {
         var w = ctx.width;
         var h = ctx.height;
-        var remove = [];
 
         if (el.style.waveRadius) {
           var rTimes = el.style.waveRadius.split(' ').map(Number);
+          var positions = parseWavePositions(el);
+        } else {
+          var rTimes = [];
+          var positions = [];
         }
         if (el.style.waveOpacity) {
           var oTimes = el.style.waveOpacity.split(' ').map(Number);
+        } else {
+          var oTimes = [];
+        }
+        while (oTimes.length < rTimes.length) {
+          oTimes.push(0);
         }
 
-        //console.log(waves, rTimes, oTimes);
-
-        for (var i = 0; i < waves.length; i++) {
-          var wave = waves[i];
-
+        for (var i = 0; i < positions.length; i++) {
           var radius = waveRadiusFn(rTimes ? rTimes[i] : 0, w, h);
           var waveAlpha = waveOpacityFn(oTimes ? oTimes[i] : 0);
 
           ctx.setCompositeOperation('darken');
           ctx.setFillColor('rgba(0,255,255,'+waveAlpha+')');
           ctx.beginPath();
-          ctx.arc(wave['cX'], wave['cY'], radius, 0, Math.PI * 2);
+          ctx.arc(positions[i][0], positions[i][1], radius, 0, Math.PI * 2);
           ctx.fill();
-
-          if (radius >= WAVE_MAX_R) {
-            wave.inactive = true;
-            console.log('inactive');
-          }
         }
       };
 
+      function updateKFs(kf, time) {
+        var i = 0;
+        while (kf[i][0] < time)
+          i++
+        var newKF = [];
+        newKF.push([0, kf[i-1][1].map(function(x) { return x + time; })]);
+        for (; i < kf.length; i++)
+          newKF.push([kf[i][0] - time, kf[i][1]]);
+        newKF = newKF.map(function(kf) { kf[1].push(kf[0]); return kf; });
+        newKF.push([1, newKF[newKF.length - 1][1].map(function() { return 1; })]);
+        return newKF;
+      }
+
+      function toKF(kf) {
+        return kf.map(function(l) { return {offset: l[0], waveRadius: l[1].join(' ')} });
+      }
+
+      function toOKF(kf) {
+        return kf.map(function(l) { return {offset: l[0], waveOpacity: l[1].join(' ')} });
+      }
+
+      var down = false;
 
       el.addEventListener('mousedown', function(evt) {
-        var wave = {
-          'isPointerDown': true,
-          'tDown': 0,
-          'tUp': 0,
-          'pointerDown': window.performance.now(),
-          'pointerUp': 0,
-          'waveMax': 0,
-          'cX': evt.clientX,
-          'cY': evt.clientY
-        };
-
-        var allInactive = true;
-        for (var i = 0; i < waves.length; i++) {
-          if (!waves[i].inactive) {
-            allInactive = false;
-            break;
-          }
-        }
-        if (allInactive) {
-          waves = [wave];
+        if ((!op || (op.currentTime == 1000)) && (!rp || (rp.currentTime == 1000))) {
+          console.log('reset');
           if (op) {
             op.cancel();
           }
@@ -107,47 +122,39 @@
             rp.cancel();
           }
           kf = [[0, [0]], [1, [1]]];
-          function toKF(kf) {
-            return kf.map(function(l) { return {offset: l[0], waveRadius: l[1].join(' ')} });
-          }
-          rp = el.animate(toKF(kf), {duration: 1000, easing: 'forwards'});
+          el.style.wavePosition = evt.clientX + ' ' + evt.clientY;
+          okf = undefined;
         } else {
-          waves.push(wave);
           var time = rp.currentTime / 1000;
-          var i = 0;
-          while (kf[i][0] < time)
-            i++
-          var newKF = [];
-          newKF.push([0, kf[i-1][1].map(function(x) { return x + time; })]);
-          for (; i < kf.length; i++)
-            newKF.push([kf[i][0] - time, kf[i][1]]);
-          newKF = newKF.map(function(kf) { kf[1].push(kf[0]); return kf; });
-          newKF.push([1, newKF[newKF.length - 1][1].map(function() { return 1; })]);
-          kf = newKF;
-          rp = el.animate(toKF(kf), {duration: 1000, easing: 'forwards'});
-          console.log(JSON.stringify(kf));
+          kf = updateKFs(kf, time);
+          el.style.wavePosition = el.style.wavePosition + ',' + evt.clientX + ' ' + evt.clientY;
+          console.log(kf);
+          console.log(el.style.wavePosition);
         }
+        rp = el.animate(toKF(kf), {duration: 1000, easing: 'forwards'});
         el.invalidate();
+        down = true;
       });
 
       el.addEventListener('mousemove', function(evt) {
-        for (var i = 0; i < waves.length; i++) {
-          if (waves[i]['isPointerDown']) {
-            waves[i]['cX'] = evt.clientX;
-            waves[i]['cY'] = evt.clientY;
-          }
-        }
+        if (!down)
+          return;
+
+        var positions = parseWavePositions(el);
+        positions[positions.length - 1][0] = evt.clientX;
+        positions[positions.length - 1][1] = evt.clientY;
+        el.style.wavePosition = positions.map(function(p) { return p.join(' '); }).join(',');
       });
 
       el.addEventListener('mouseup', function(evt) {
-        for (var i = 0; i < waves.length; i++) {
-          if (waves[i]['isPointerDown']) {
-            waves[i]['isPointerDown'] = false;
-            waves[i]['pointerUp'] = window.performance.now();
-            waves[i]['pointerDown'] = 0;
-          }
+        if (okf == undefined) {
+          okf = [[0, [0]], [1, [1]]];
+        } else {
+          var time = op.currentTime / 1000;
+          okf = updateKFs(okf, time);
         }
-        op = el.animate([{waveOpacity: '0'}, {waveOpacity: '1'}], {duration: 1000, easing: 'forwards'});
+        op = el.animate(toOKF(okf), {duration: 1000, easing: 'forwards'});
+        down = false;
       });
     </script>
   </body>
