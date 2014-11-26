@@ -4,7 +4,8 @@
     <link rel="import" href="../src/css-poly.html">
     <script src="../bower_components/closure-library/closure/goog/base.js"></script>
     <script src="../src/deps.js"></script>
-    <script src='../src/glitter.js'></script>
+    <script src='../src/pipeline.js'></script>
+    <script src='../src/style.js'></script>
     <script>goog.require('paint');</script>
   </head>
   <body>
@@ -81,11 +82,13 @@
           var radius = waveRadiusFn(rTimes ? rTimes[i] : 0, w, h);
           var waveAlpha = waveOpacityFn(oTimes ? oTimes[i] : 0);
 
-          ctx.setCompositeOperation('darken');
-          ctx.setFillColor('rgba(0,255,255,'+waveAlpha+')');
-          ctx.beginPath();
-          ctx.arc(positions[i][0], positions[i][1], radius, 0, Math.PI * 2);
-          ctx.fill();
+          if (waveAlpha > 0) {
+            ctx.setCompositeOperation('darken');
+            ctx.setFillColor('rgba(0,255,255,'+waveAlpha+')');
+            ctx.beginPath();
+            ctx.arc(positions[i][0], positions[i][1], radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       };
 
@@ -114,7 +117,6 @@
 
       el.addEventListener('mousedown', function(evt) {
         if ((!op || (op.currentTime == 1000)) && (!rp || (rp.currentTime == 1000))) {
-          console.log('reset');
           if (op) {
             op.cancel();
           }
@@ -128,20 +130,29 @@
           var time = rp.currentTime / 1000;
           kf = updateKFs(kf, time);
           el.style.wavePosition = el.style.wavePosition + ',' + evt.clientX + ' ' + evt.clientY;
+          rp.cancel();
         }
         rp = el.animate(toKF(kf), {duration: 1000, fill: 'forwards'});
-        el.invalidate();
         down = true;
       });
+
+      var pendingEvt = undefined;
 
       el.addEventListener('mousemove', function(evt) {
         if (!down)
           return;
 
-        var positions = parseWavePositions(el);
-        positions[positions.length - 1][0] = evt.clientX;
-        positions[positions.length - 1][1] = evt.clientY;
-        el.style.wavePosition = positions.map(function(p) { return p.join(' '); }).join(',');
+        if (pendingEvt == undefined) {
+          requestAnimationFrame(function() {
+            var positions = parseWavePositions(el);
+            positions[positions.length - 1][0] = pendingEvt.clientX;
+            positions[positions.length - 1][1] = pendingEvt.clientY;
+            el.style.wavePosition = positions.map(function(p) { return p.join(' '); }).join(',');
+            pendingEvt = undefined;
+          });
+        }
+        pendingEvt = evt;
+
       });
 
       el.addEventListener('mouseup', function(evt) {
@@ -150,6 +161,7 @@
         } else {
           var time = op.currentTime / 1000;
           okf = updateKFs(okf, time);
+          op.cancel();
         }
         op = el.animate(toOKF(okf), {duration: 1000, fill: 'forwards'});
         down = false;
