@@ -8,7 +8,7 @@
 #foo {
   width: 100px;
   height: 100px;
-  background: red;
+  background: purple;
   fixup: gradient;
 }
 </css-poly>
@@ -19,6 +19,8 @@ registerPropertyHandler('fixup', {
     if (mutation.value == 'gradient') {
       console.log(mutation);
       var bgc = /rgb\(([0-9]+), ([0-9]+), ([0-9]+)\)/.exec(mutation.computed.backgroundColor);
+      if (bgc == null)
+        return;
       var r = Number(bgc[1]);
       var g = Number(bgc[2]);
       var b = Number(bgc[3]);

@@ -4,6 +4,9 @@ goog.require('pipeline');
 
 style.baseExec_ = css.exec;
 css.exec = function(str) {
+  var els = document.querySelectorAll('*');
+  for (var i = 0; i < els.length; i++)
+    els[i].style.element = els[i];
   style.baseExec_(str);
   style.handleCustomProperties_();
 };

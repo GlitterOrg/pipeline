@@ -12,6 +12,7 @@ Object.defineProperty(Element.prototype, 'onBackground', {
     paint.els_.push(this);
     this.style.element = this;
     this._onBackground = fn;
+    this._painted = true;
   }
 });
 
@@ -44,6 +45,8 @@ paint.collectInvalidPaintElements_ = function() {
 paint.canvasUID_ = 0;
 
 paint.paint_ = function(el) {
+  if (!el._painted)
+    return;
   el._width = el.clientWidth;
   el._height = el.clientHeight;
 
