@@ -4,7 +4,9 @@ goog.require('css');
 
 goog.scope(function() {
 var invalidate = function() { return window['pipeline']['invalidate']; };
-var InvalidationLevel = function() { return window['pipeline']['InvalidationLevel']; };
+var InvalidationLevel =
+    function() { return window['pipeline']['InvalidationLevel']; };
+
 
 /**
  * @typedef {{
@@ -14,6 +16,7 @@ var InvalidationLevel = function() { return window['pipeline']['InvalidationLeve
  * }}
  */
 style.CustomPropertyRecord;
+
 
 /** @private {!Function} */
 style.baseExec_ = css.exec;
@@ -45,7 +48,9 @@ var registerPropertyHandler = function(name, record) {
     window['addCustomHandler'](name, record.animateAs);
   }
   Object.defineProperty(CSSStyleDeclaration.prototype, name, {
-    get: /** @this {!CSSStyleDeclaration} */ function() { return this['_' + name]; },
+    get: /** @this {!CSSStyleDeclaration} */ function() {
+      return this['_' + name];
+    },
     set: /** @this {!CSSStyleDeclaration} */ function(v) {
       invalidate()(
           this.element, InvalidationLevel().STYLE_INVALID);
@@ -112,13 +117,15 @@ var isAScroller = function(element) {
   //element.addEventListener('wheel', function(e) {
   //  element._deltas.push(e.wheelDeltaY);
   //});
-  window['PolymerGestures'].addEventListener(element.parentElement, 'track', function(e) {
-    element._deltas.push(e['ddy']);
-    invalidate()(element, InvalidationLevel().STYLE_INVALID);
-  });
+  window['PolymerGestures'].addEventListener(element.parentElement, 'track',
+      function(e) {
+        element._deltas.push(e['ddy']);
+        invalidate()(element, InvalidationLevel().STYLE_INVALID);
+      });
   style.scrollers_.push(element);
-}
+};
 goog.exportSymbol('isAScroller', isAScroller);
+
 
 /**
  * Process custom properties for the provided element.
@@ -149,4 +156,4 @@ style.processScroller = function(element) {
   }
 };
 
-});
+});  // goog.scope

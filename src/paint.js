@@ -5,7 +5,8 @@ goog.require('canvas');
 
 goog.scope(function() {
 var invalidate = function() { return window['pipeline']['invalidate']; };
-var InvalidationLevel = function() { return window['pipeline']['InvalidationLevel']; };
+var InvalidationLevel =
+    function() { return window['pipeline']['InvalidationLevel']; };
 
 // Set onBackground for custom paint on the background!
 Object.defineProperty(Element.prototype, 'onBackground', {
@@ -92,4 +93,4 @@ paint.paint = function(el) {
   // Write to actual canvas.
   el._ctx.write(ctx);
 };
-});
+});  // goog.scope
