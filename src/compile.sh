@@ -3,7 +3,7 @@ java -jar ../bower_components/compiler-latest/compiler.jar \
   --js=../bower_components/closure-library/closure/goog/**.js \
   --js=./**.js \
   --only_closure_dependencies \
-  --closure_entry_point="paint" \
+  --closure_entry_point="pipeline" \
   --compilation_level=ADVANCED_OPTIMIZATIONS \
   --jscomp_error=accessControls \
   --jscomp_error=ambiguousFunctionDecl \

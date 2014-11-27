@@ -3,6 +3,10 @@ goog.provide('paint');
 goog.require('canvas');
 
 
+goog.scope(function() {
+var invalidate = function() { return window['pipeline']['invalidate']; };
+var InvalidationLevel = function() { return window['pipeline']['InvalidationLevel']; };
+
 // Set onBackground for custom paint on the background!
 Object.defineProperty(Element.prototype, 'onBackground', {
   get: /** @this {!Element} */ function() { return this._onBackground; },
@@ -16,10 +20,18 @@ Object.defineProperty(Element.prototype, 'onBackground', {
   }
 });
 
+
 /** @private {!Array<!Element>} List of elements which have custom paint. */
 paint.els_ = [];
 
-paint.collectInvalidPaintElements_ = function() {
+
+/**
+ * Collects paint elements that are invalid but have not been marked so.
+ * These are elements that have changed size since last paint.
+ *
+ * @return {boolean} there were elements marked as invalid.
+ */
+paint.collectInvalidPaintElements = function() {
   var dirty = false;
 
   // Measure all elements which we are watching to see if they need painting.
@@ -34,7 +46,7 @@ paint.collectInvalidPaintElements_ = function() {
     // Check if Element has changed size, needs painting.
     if (width != el._width || height != el._height) {
       dirty = true;
-      pipeline.invalidate(el, pipeline.PAINT_INVALID);
+      invalidate()(el, InvalidationLevel().PAINT_INVALID);
       el._width = width;
       el._height = height;
     }
@@ -42,9 +54,16 @@ paint.collectInvalidPaintElements_ = function() {
   return dirty;
 };
 
+
+/** @private {number} Unique (incrementing) ID for canvas naming. */
 paint.canvasUID_ = 0;
 
-paint.paint_ = function(el) {
+
+/**
+ * Paint the provided element.
+ * @param {!Element} el
+ */
+paint.paint = function(el) {
   if (!el._painted)
     return;
   el._width = el.clientWidth;
@@ -73,3 +92,4 @@ paint.paint_ = function(el) {
   // Write to actual canvas.
   el._ctx.write(ctx);
 };
+});

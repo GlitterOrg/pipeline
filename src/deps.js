@@ -6,3 +6,5 @@ goog.addDependency('../../../../src/css_test.js', ['css_test'], ['css', 'goog.te
 goog.addDependency('../../../../src/cssom.js', ['cssom'], ['goog.asserts']);
 goog.addDependency('../../../../src/cssom_test.js', ['cssom_test'], ['cssom', 'goog.testing.jsunit']);
 goog.addDependency('../../../../src/paint.js', ['paint'], ['canvas']);
+goog.addDependency('../../../../src/pipeline.js', ['pipeline'], ['paint', 'style']);
+goog.addDependency('../../../../src/style.js', ['style'], ['css']);
