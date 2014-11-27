@@ -9,7 +9,7 @@ goog.require('goog.asserts');
  * @return {!cssom.CSSStyleSheet} The parsed stylesheet.
  */
 cssom.parse = function(str) {
-  var raw = parseAStylesheet(str);
+  var raw = goog.global['parseAStylesheet'](str);
   return cssom.CSSStyleSheet.parse_(raw);
 };
 
@@ -48,6 +48,7 @@ cssom.CSSStyleSheet = goog.defineClass(Object, {
   }
 });
 
+
 /**
  * Represents an abstract, base CSS style rule. Each distinct CSS style rule
  * type is represented by a distinct interface that inherits from this
@@ -59,7 +60,7 @@ cssom.CSSRule = goog.defineClass(Object, {
    * @constructor
    */
   constructor: function(type) {
-    /** @param {number} */
+    /** @type {number} */
     this.type = type;
 
     // TODO cssText, parentRule, parentStyleSheet.
@@ -77,11 +78,12 @@ cssom.CSSRule = goog.defineClass(Object, {
   }
 });
 
+
 /** Represents a style rule. */
 cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
   /**
-   * @param {string} selectorTokens
-   * @consturctor
+   * @param {!Array.<!Object<string>>} selectorTokens
+   * @constructor
    */
   constructor: function(selectorTokens) {
     cssom.CSSStyleRule.base(this, 'constructor', cssom.CSSRule.STYLE_RULE);
@@ -89,7 +91,7 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
     /** @type {string} */
     this.selectorText = cssom.collapseTokens(selectorTokens);
 
-    /** @type {!Array} */
+    /** @type {!Array.<!Object<string>>} */
     this.selectorTokens = selectorTokens;
 
     /** @type {!cssom.CSSStyleDeclaration} */
@@ -107,7 +109,7 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
       var block = raw['value'];
       goog.asserts.assert('BLOCK' == block['type']);
       var arr = goog.asserts.assertArray(block['value']).slice();
-      var check = cssom.createFoo_(arr);
+      var check = cssom.createGenerator_(arr);
 
       while (arr.length) {
 
@@ -119,16 +121,12 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
         goog.asserts.assertObject(check(cssom.TOKENS.COLON));
         check(cssom.TOKENS.WHITESPACE);
 
-/*        var idx = arr.reduce(function(prev, curr, index) {
-
-        });*/
-
         var ident = check(cssom.TOKENS.IDENT);
         var func = check(cssom.TOKENS.FUNCTION);
         var dimen = check(cssom.TOKENS.DIMENSION);
         var hash = check(cssom.TOKENS.HASH);
         var propertyToken =
-          goog.asserts.assertObject(ident || func || dimen || hash);
+            goog.asserts.assertObject(ident || func || dimen || hash);
 
         var propertyValue;
         if (ident) {
@@ -169,19 +167,23 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
 });
 
 
-cssom.createFoo_ = function(tokens) {
-  return function(type, value) {
+/**
+ * Creates a generator which will:
+ *  - Check the next token to see if it matches a type and value.
+ *  - If so will consume and return that token.
+ *
+ *  @param {!Array} tokens
+ *  @return {function(string, ?=): ?}
+ *  @private
+ */
+cssom.createGenerator_ = function(tokens) {
+  return /** @type {function(string, ?=): ?} */ (function(type, opt_value) {
     var tok = tokens[0];
     return tok && (tok['tokenType'] || tok['type']) == type &&
-      (!value || tok['value'] == value) ? tokens.shift() : null;
-  };
+        (!opt_value || tok['value'] == opt_value) ? tokens.shift() : null;
+  });
 };
 
-
-// CSSStyleDeclaration needs to do funky things.
-/** @constructor */
-cssom.Unsealable_ = function() {};
-goog.tagUnsealableClass(cssom.Unsealable_);
 
 
 /**
@@ -194,77 +196,83 @@ goog.tagUnsealableClass(cssom.Unsealable_);
  *
  * @constructor
  */
-cssom.CSSStyleDeclaration = goog.defineClass(cssom.Unsealable_, {
-  constructor: function() {
-    /** @private {!Object.<string>} */
-    this.priority_ = {};
+cssom.CSSStyleDeclaration = function() {
+  /** @private {!Object.<string>} */
+  this.priority_ = {};
 
-    /** @private {!Array.<string>} */
-    this.keys_ = [];
-  },
+  /** @private {!Array.<string>} */
+  this.keys_ = [];
+};
 
-  /**
-   * Gets the property value.
-   * @param {string} property
-   * @return {string}
-   */
-  getPropertyValue: function(property) {
-    return this[property];
-  },
 
-  /**
-   * Gets the property priority.
-   * @param {string} property
-   * @return {string}
-   */
-  getPropertyPriority: function(property) {
-    return this.priority_[property] || '';
-  },
+/**
+ * Gets the property value.
+ * @param {string} property
+ * @return {string}
+ */
+cssom.CSSStyleDeclaration.prototype.getPropertyValue = function(property) {
+  return this[property];
+};
 
-  /**
-   * Sets a property value (and optionally priority).
-   * @param {string} property
-   * @param {string} value
-   * @param {string=} opt_priority
-   */
-  setProperty: function(property, value, opt_priority) {
-    this.keys_.push(property);
 
-    this[property] = value || '';
+/**
+ * Gets the property priority.
+ * @param {string} property
+ * @return {string}
+ */
+cssom.CSSStyleDeclaration.prototype.getPropertyPriority = function(property) {
+  return this.priority_[property] || '';
+};
 
-    if (goog.isDef(opt_priority)) {
-      this.priority_[property] = opt_priority || '';
-    }
-  },
 
-  /**
-   * Sets a property priority.
-   * @param {string} property
-   * @param {string} priority
-   */
-  setPropertyPriority: function(property, priority) {
-    this.priority_[property] = priority || '';
-  },
+/**
+ * Sets a property value (and optionally priority).
+ * @param {string} property
+ * @param {string} value
+ * @param {string=} opt_priority
+ */
+cssom.CSSStyleDeclaration.prototype.setProperty = function(
+    property, value, opt_priority) {
+  this.keys_.push(property);
 
-  /**
-   * Removes a property.
-   * @param {string} property
-   */
-  removeProperty: function(property) {
-    delete this[property];
-    delete this.priority_[property];
-  },
+  this[property] = value || '';
 
-  /** @return {!Array.<string>} */
-  keys: function() {
-    return this.keys_;
+  if (goog.isDef(opt_priority)) {
+    this.priority_[property] = opt_priority || '';
   }
-});
+};
+
+
+/**
+ * Sets a property priority.
+ * @param {string} property
+ * @param {string} priority
+ */
+cssom.CSSStyleDeclaration.prototype.setPropertyPriority = function(
+    property, priority) {
+  this.priority_[property] = priority || '';
+};
+
+
+/**
+ * Removes a property.
+ * @param {string} property
+ */
+cssom.CSSStyleDeclaration.prototype.removeProperty = function(property) {
+  delete this[property];
+  delete this.priority_[property];
+};
+
+
+/** @return {!Array.<string>} */
+cssom.CSSStyleDeclaration.prototype.keys = function() {
+  return this.keys_;
+};
 
 
 /**
  * Collapses a list of CSS tokens.
- * @param {!Array.<!Object<string>>} prelude
+ * @param {!Array.<!Object>} prelude
  * @return {string} The collapses CSSRule selector.
  */
 cssom.collapseTokens = function(prelude) {

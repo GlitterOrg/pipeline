@@ -1,0 +1,169 @@
+<html>
+  <head>
+    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <link rel="import" href="../src/css-poly.html">
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="../src/deps.js"></script>
+    <script>goog.require('pipeline');</script>
+  </head>
+  <body>
+    <div style="width: 500px; height: 500px; cursor: pointer; display: inline-block; color: #666; font-size:14px; background: #fafafa; box-shadow: 0 2px 10px 0 rgba(0,0,0,.16); border-radius: 3px; -webkit-user-select: none;">BUTTON</div>
+    <script>
+      var WAVE_MAX_R = 150;
+
+      registerPropertyHandler('waveRadius', {
+        animateAs: 'list<number>'
+      });
+      registerPropertyHandler('waveOpacity', {
+        animateAs: 'list<number>'
+      });
+      registerPropertyHandler('wavePosition', {});
+
+      var waveRadiusFn = function(time, ww, hh) {
+        var waveRadius = Math.min(Math.sqrt(ww * ww + hh * hh), WAVE_MAX_R) * 1.1 + 5;
+        var duration = 1.1 - .2 * (waveRadius / WAVE_MAX_R);
+        var tt = (time / duration);
+        var size = waveRadius * (1 - Math.pow(80, -tt));
+        return Math.abs(size);
+      };
+
+      var OPACITY_INITIAL = 0.25;
+      var OPACITY_DECAY = 0.8;
+
+      var waveOpacityFn = function(time) {
+        return Math.max(0, OPACITY_INITIAL - time * OPACITY_DECAY);
+      };
+
+      var cX;
+      var cY;
+      var animTime;
+      var hasRaf;
+      var waves = [];
+      var op;
+      var rp;
+      var kf;
+      var okf;
+
+      var el = document.body.children[0];
+
+      var parseWavePositions = function(element) {
+        if (el.style.wavePosition !== undefined && el.style.wavePosition !== '') {
+          return el.style.wavePosition.split(',').map(
+            function(position) {
+              return position.split(' ').map(Number);
+            });
+        }
+        return [];
+      }
+
+      el.onBackground = function(ctx) {
+        var w = ctx.width;
+        var h = ctx.height;
+
+        if (el.style.waveRadius) {
+          var rTimes = el.style.waveRadius.split(' ').map(Number);
+          var positions = parseWavePositions(el);
+        } else {
+          var rTimes = [];
+          var positions = [];
+        }
+        if (el.style.waveOpacity) {
+          var oTimes = el.style.waveOpacity.split(' ').map(Number);
+        } else {
+          var oTimes = [];
+        }
+        while (oTimes.length < rTimes.length) {
+          oTimes.push(0);
+        }
+
+        for (var i = 0; i < positions.length; i++) {
+          var radius = waveRadiusFn(rTimes ? rTimes[i] : 0, w, h);
+          var waveAlpha = waveOpacityFn(oTimes ? oTimes[i] : 0);
+
+          if (waveAlpha > 0) {
+            ctx.setCompositeOperation('darken');
+            ctx.setFillColor('rgba(0,255,255,'+waveAlpha+')');
+            ctx.beginPath();
+            ctx.arc(positions[i][0], positions[i][1], radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      };
+
+      function updateKFs(kf, time) {
+        var i = 0;
+        while (kf[i][0] < time)
+          i++
+        var newKF = [];
+        newKF.push([0, kf[i-1][1].map(function(x) { return x + time; })]);
+        for (; i < kf.length; i++)
+          newKF.push([kf[i][0] - time, kf[i][1]]);
+        newKF = newKF.map(function(kf) { kf[1].push(kf[0]); return kf; });
+        newKF.push([1, newKF[newKF.length - 1][1].map(function() { return 1; })]);
+        return newKF;
+      }
+
+      function toKF(kf) {
+        return kf.map(function(l) { return {offset: l[0], waveRadius: l[1].join(' ')} });
+      }
+
+      function toOKF(kf) {
+        return kf.map(function(l) { return {offset: l[0], waveOpacity: l[1].join(' ')} });
+      }
+
+      var down = false;
+
+      el.addEventListener('mousedown', function(evt) {
+        if ((!op || (op.currentTime == 1000)) && (!rp || (rp.currentTime == 1000))) {
+          if (op) {
+            op.cancel();
+          }
+          if (rp) {
+            rp.cancel();
+          }
+          kf = [[0, [0]], [1, [1]]];
+          el.style.wavePosition = evt.clientX + ' ' + evt.clientY;
+          okf = undefined;
+        } else {
+          var time = rp.currentTime / 1000;
+          kf = updateKFs(kf, time);
+          el.style.wavePosition = el.style.wavePosition + ',' + evt.clientX + ' ' + evt.clientY;
+          rp.cancel();
+        }
+        rp = el.animate(toKF(kf), {duration: 1000, fill: 'forwards'});
+        down = true;
+      });
+
+      var pendingEvt = undefined;
+
+      el.addEventListener('mousemove', function(evt) {
+        if (!down)
+          return;
+
+        if (pendingEvt == undefined) {
+          requestAnimationFrame(function() {
+            var positions = parseWavePositions(el);
+            positions[positions.length - 1][0] = pendingEvt.clientX;
+            positions[positions.length - 1][1] = pendingEvt.clientY;
+            el.style.wavePosition = positions.map(function(p) { return p.join(' '); }).join(',');
+            pendingEvt = undefined;
+          });
+        }
+        pendingEvt = evt;
+
+      });
+
+      el.addEventListener('mouseup', function(evt) {
+        if (okf == undefined) {
+          okf = [[0, [0]], [1, [1]]];
+        } else {
+          var time = op.currentTime / 1000;
+          okf = updateKFs(okf, time);
+          op.cancel();
+        }
+        op = el.animate(toOKF(okf), {duration: 1000, fill: 'forwards'});
+        down = false;
+      });
+    </script>
+  </body>
+</html>

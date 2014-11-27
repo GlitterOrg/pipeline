@@ -1,6 +1,11 @@
 <!DOCTYPE html>
-<link rel="import" href="src/css-poly.html"> 
-<script src='glitter.js'></script>
+<link rel="import" href="../src/css-poly.html">
+<script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+<script src="../bower_components/closure-library/closure/goog/base.js"></script>
+<script src="../src/deps.js"></script>
+<script>
+goog.require('pipeline');
+</script>
 <css-poly>
 #contents {
   scrollOut: glow;
@@ -28,7 +33,7 @@
   -webkit-user-select: none;
 }
 </css-poly>
-<script src='bower_components/polymer-gestures/polymer-gestures.js'></script>
+<script src='../bower_components/polymer-gestures/polymer-gestures.js'></script>
 <div id='container'>
   <div id='contents'>
     <div class='contentBox' style='background: red' id='glower'></div>
@@ -46,13 +51,12 @@
 <script>
 registerPropertyHandler('scrollOut', {
   apply: function(mutation) {
-    console.log(mutation);
     if (mutation.value == 'glow' && mutation.result.computedScrollDelta !== undefined) {
       if (mutation.result.overscroll == undefined)
-	mutation.result.overscroll = 0;
-      mutation.result.overscroll += mutation.result.computedScrollDelta;
+        mutation.result.overscroll = 0;
+      mutation.result.overscroll = Number(mutation.result.overscroll) + mutation.result.computedScrollDelta;
       if (mutation.result.overscroll < 0) {
-	mutation.result.scrollOffset = 0;
+        mutation.result.scrollOffset = 0;
       }
     }
   }
@@ -75,6 +79,6 @@ isAScroller(contents);
 PolymerGestures.addEventListener(container, 'trackend', function(e) {
   if (contents.style.overscroll < 0)
     contents.animate([{overscroll: contents.style.overscroll}, {overscroll: 0}],
-	-contents.style.overscroll * 2);
+        -contents.style.overscroll * 2);
 });
 </script>
