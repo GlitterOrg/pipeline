@@ -65,7 +65,7 @@ function isAScroller(element) {
   //});
   PolymerGestures.addEventListener(element.parentElement, 'track', function(e) {
     element._deltas.push(e.ddy);
-    pipeline.invalidate(element);
+    pipeline.invalidate(element, pipeline.STYLE_INVALID);
   });
   style.scrollers_.push(element);
 }
