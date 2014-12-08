@@ -60,6 +60,31 @@ var registerPropertyHandler = function(name, record) {
 };
 goog.exportSymbol('registerPropertyHandler', registerPropertyHandler);
 
+/**
+ * Register a property handler for the provided name.
+ *
+ * @param {string} name
+ * @param {!style.CustomPropertyRecord} record
+ */
+var registerListPropertyHandler = function(name, record) {
+  style.customProperties_[name] = record;
+  if (record.animateValueAs) {
+    window['addCustomListHandler'](name, record.animateValueAs);
+  }
+  Object.defineProperty(CSSStyleDeclaration.prototype, name, {
+    get: /** @this {!CSSStyleDeclaration} */ function() {
+      return this['_' + name];
+    },
+    set: /** @this {!CSSStyleDeclaration} */ function(v) {
+      invalidate()(
+          this.element, InvalidationLevel().STYLE_INVALID);
+      this['_' + name] = v;
+    }
+  });
+};
+goog.exportSymbol('registerListPropertyHandler', registerListPropertyHandler);
+
+
 
 /**
  * Iterate through elements and custom properties on each.

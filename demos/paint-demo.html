@@ -11,11 +11,11 @@
     <script>
       var WAVE_MAX_R = 150;
 
-      registerPropertyHandler('waveRadius', {
-        animateAs: 'list<number>'
+      registerListPropertyHandler('waveRadius', {
+        animateValueAs: 'number'
       });
-      registerPropertyHandler('waveOpacity', {
-        animateAs: 'list<number>'
+      registerListPropertyHandler('waveOpacity', {
+        animateValueAs: 'number'
       });
       registerPropertyHandler('wavePosition', {});
 
@@ -61,17 +61,18 @@
         var h = ctx.height;
 
         if (el.style.waveRadius) {
-          var rTimes = el.style.waveRadius.split(' ').map(Number);
+          var rTimes = el.style.waveRadius;
           var positions = parseWavePositions(el);
         } else {
           var rTimes = [];
           var positions = [];
         }
         if (el.style.waveOpacity) {
-          var oTimes = el.style.waveOpacity.split(' ').map(Number);
+          var oTimes = el.style.waveOpacity;
         } else {
           var oTimes = [];
         }
+
         while (oTimes.length < rTimes.length) {
           oTimes.push(0);
         }
@@ -104,11 +105,11 @@
       }
 
       function toKF(kf) {
-        return kf.map(function(l) { return {offset: l[0], waveRadius: l[1].join(' ')} });
+        return kf.map(function(l) { return {offset: l[0], waveRadius: l[1]} });
       }
 
       function toOKF(kf) {
-        return kf.map(function(l) { return {offset: l[0], waveOpacity: l[1].join(' ')} });
+        return kf.map(function(l) { return {offset: l[0], waveOpacity: l[1]} });
       }
 
       var down = false;
