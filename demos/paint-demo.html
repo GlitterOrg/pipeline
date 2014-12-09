@@ -1,6 +1,6 @@
 <html>
   <head>
-    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <script src='../bower_components/web-animations-next/web-animations.dev.js'></script>
     <link rel="import" href="../src/css-poly.html">
     <script src="../bower_components/closure-library/closure/goog/base.js"></script>
     <script src="../src/deps.js"></script>
@@ -34,15 +34,8 @@
         return Math.max(0, OPACITY_INITIAL - time * OPACITY_DECAY);
       };
 
-      var cX;
-      var cY;
-      var animTime;
-      var hasRaf;
-      var waves = [];
-      var op;
-      var rp;
-      var kf;
-      var okf;
+      var op = [];
+      var rp = [];
 
       var el = document.body.children[0];
 
@@ -68,7 +61,7 @@
           var positions = [];
         }
         if (el.style.waveOpacity) {
-          var oTimes = el.style.waveOpacity;
+          var oTimes = el.style.waveOpacity.slice();
         } else {
           var oTimes = [];
         }
@@ -91,47 +84,28 @@
         }
       };
 
-      function updateKFs(kf, time) {
-        var i = 0;
-        while (kf[i][0] < time)
-          i++
-        var newKF = [];
-        newKF.push([0, kf[i-1][1].map(function(x) { return x + time; })]);
-        for (; i < kf.length; i++)
-          newKF.push([kf[i][0] - time, kf[i][1]]);
-        newKF = newKF.map(function(kf) { kf[1].push(kf[0]); return kf; });
-        newKF.push([1, newKF[newKF.length - 1][1].map(function() { return 1; })]);
-        return newKF;
-      }
-
-      function toKF(kf) {
-        return kf.map(function(l) { return {offset: l[0], waveRadius: l[1]} });
-      }
-
-      function toOKF(kf) {
-        return kf.map(function(l) { return {offset: l[0], waveOpacity: l[1]} });
-      }
-
       var down = false;
 
       el.addEventListener('mousedown', function(evt) {
-        if ((!op || (op.currentTime == 1000)) && (!rp || (rp.currentTime == 1000))) {
-          if (op) {
-            op.cancel();
-          }
-          if (rp) {
-            rp.cancel();
-          }
-          kf = [[0, [0]], [1, [1]]];
+        if (((op.length == 0) || (op[op.length - 1].currentTime == 1000)) && 
+            ((rp.length == 0) || (rp[rp.length - 1].currentTime == 1000))) {
+          op.forEach(function(p) { p.cancel(); });
+          rp.forEach(function(p) { p.cancel(); });
           el.style.wavePosition = evt.clientX + ' ' + evt.clientY;
-          okf = undefined;
+          el.style.waveOpacity = [];
+          el.style.waveRadius = [];
+          op = [];
+          rp = [];
         } else {
-          var time = rp.currentTime / 1000;
-          kf = updateKFs(kf, time);
           el.style.wavePosition = el.style.wavePosition + ',' + evt.clientX + ' ' + evt.clientY;
-          rp.cancel();
         }
-        rp = el.animate(toKF(kf), {duration: 1000, fill: 'forwards'});
+
+        var pos = el.style.waveRadius == undefined ? 0 : el.style.waveRadius.length;
+        var name = 'waveRadius-' + pos;
+        var kf = [{}, {}];
+        kf[0][name] = 0;
+        kf[1][name] = 1;
+        rp.push(el.animate(kf, {duration: 1000, fill: 'forwards'}));
         down = true;
       });
 
@@ -155,14 +129,12 @@
       });
 
       el.addEventListener('mouseup', function(evt) {
-        if (okf == undefined) {
-          okf = [[0, [0]], [1, [1]]];
-        } else {
-          var time = op.currentTime / 1000;
-          okf = updateKFs(okf, time);
-          op.cancel();
-        }
-        op = el.animate(toOKF(okf), {duration: 1000, fill: 'forwards'});
+        var pos = el.style.waveOpacity == undefined ? 0 : el.style.waveOpacity.length;
+        var name = 'waveOpacity-' + pos;
+        var kf = [{}, {}];
+        kf[0][name] = 0;
+        kf[1][name] = 1;
+        op.push(el.animate(kf, {duration: 1000, fill: 'forwards'}));
         down = false;
       });
     </script>
