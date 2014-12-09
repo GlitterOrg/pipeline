@@ -8,7 +8,7 @@ goog.scope(function() {
 /**
  * A write only rendering context, records commands to be replayed later.
  * @export
- * */
+ */
 canvas.RenderingContext = goog.defineClass(null, {
   /** @constructor */
   constructor: function() {
@@ -48,15 +48,19 @@ canvas.RenderingContext = goog.defineClass(null, {
 
   /**
    * Writes the command list to a real context, and clears the command buffer.
-   * @param {!CanvasRenderingContext2D} ctx
+   * @param {!CanvasRenderingContext2D} lower
+   * @param {!CanvasRenderingContext2D} upper
    */
-  write: function(ctx) {
+  write: function(lower, upper) {
     // Check that we aren't writable.
     goog.asserts.assert(!this.writable_);
+    var ctx = lower; // Begin with the lower context.
 
     for (var i = 0; i < this.commands_.length; i++) {
       var cmd = this.commands_[i];
-      if (ContextProperty_[cmd.command]) {
+      if (cmd.command == CommandType_.PAINT_SUPER) {
+        ctx = upper;
+      } else if (ContextProperty_[cmd.command]) {
         ctx[cmd.command] = cmd.args[0];
       } else {
         CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
@@ -82,6 +86,10 @@ canvas.RenderingContext = goog.defineClass(null, {
 
     // Push command onto list.
     this.commands_.push({command: command, args: args});
+  },
+
+  paintSuper: function() {
+    this.push_(CommandType_.PAINT_SUPER);
   },
 
   save: function() {
@@ -370,6 +378,7 @@ canvas.Command_;
  * @private
  */
 var CommandType_ = {
+  PAINT_SUPER: 'paintSuper',
   SAVE: 'save',
   RESTORE: 'restore',
   SCALE: 'scale',
@@ -478,6 +487,7 @@ var isNumArray_ = function(numArr) {
  * @private
  */
 canvas.VerifyMap_ = {};
+canvas.VerifyMap_[CommandType_.PAINT_SUPER] = [];
 canvas.VerifyMap_[CommandType_.SAVE] = [];
 canvas.VerifyMap_[CommandType_.RESTORE] = [];
 canvas.VerifyMap_[CommandType_.SCALE] = [isNum_, isNum_];
