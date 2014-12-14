@@ -122,6 +122,7 @@ pipeline.pipeline_ = function() {
  * Upgrade an element to be glitter capable. Ideally this should
  * never need to be public.
  *
+ * @param {!Element} element 
  * @private
  */
 pipeline.upgradeToGlitter_ = function(element) {
