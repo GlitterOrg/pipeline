@@ -15,6 +15,9 @@ canvas.RenderingContext = goog.defineClass(null, {
     /** @private {boolean} */
     this.writable_ = false;
 
+    /** @private {boolean} */
+    this.seenSuper_ = false;
+
     /** @private {!Array.<!canvas.Command_>} */
     this.commands_ = [];
 
@@ -33,6 +36,7 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.writable_ = writable;
     if (writable) {
       this.commands_ = []; // TODO add assert here.
+      this.seenSuper_ = false;
     }
   },
 
@@ -89,6 +93,8 @@ canvas.RenderingContext = goog.defineClass(null, {
   },
 
   paintSuper: function() {
+    goog.asserts.assert(!this.seenSuper_, 'paintSuper already been called.');
+    this.seenSuper_ = true;
     this.push_(CommandType_.PAINT_SUPER);
   },
 

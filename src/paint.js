@@ -31,6 +31,7 @@ Object.defineProperty(Element.prototype, 'onBackground', {
     this.style.element = this;
     this._onBackground = fn;
     paint.setupElement_(this);
+    invalidate()(el, InvalidationLevel().PAINT_INVALID);
   }
 });
 
@@ -42,6 +43,7 @@ Object.defineProperty(Element.prototype, 'onContent', {
     this.style.element = this;
     this._onContent = fn;
     paint.setupElement_(this);
+    invalidate()(el, InvalidationLevel().PAINT_INVALID);
   }
 });
 
