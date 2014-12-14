@@ -28,7 +28,9 @@ paint.canvasUID_ = 0;
 Object.defineProperty(Element.prototype, 'onBackground', {
   get: /** @this {!Element} */ function() { return this._onBackground; },
   set: /** @this {!Element} */ function(fn) {
-    this.style.element = this;
+    // Begin watching this element.
+    // NOTE: will not unwatch.
+    pipeline.upgradeToGlitter_(this);
     this._onBackground = fn;
     paint.setupElement_(this);
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
@@ -46,10 +48,6 @@ Object.defineProperty(Element.prototype, 'onContent', {
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
   }
 });
-
-
-/** @private {!Array<!Element>} List of elements which have custom paint. */
-paint.els_ = [];
 
 
 /**
