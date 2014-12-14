@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <link rel="import" href="../src/css-poly.html">
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="../src/deps.js"></script>
+    <script>goog.require('pipeline');</script>
+  </head>
+  <body>
+    <div>
+      <div id="foo" style="width: 100px; height: 100px; background-image: url('https://developer.mozilla.org/samples/cssref/images/startransparent.gif');"></div>
+    </div>
+    <script>
+      var el = document.getElementById('foo');
+
+      el.onBackground = function(ctx) {
+        ctx.setFillColor('rgb(0,255,0)');
+        ctx.beginPath();
+        ctx.arc(0,0,25,0,Math.PI * 2);
+        ctx.fill();
+        ctx.paintSuper();
+        ctx.setFillColor('rgb(255,0,0)');
+        ctx.beginPath();
+        ctx.arc(100,100,25,0,Math.PI * 2);
+        ctx.fill();
+      };
+    </script>
+  </body>
+</html>

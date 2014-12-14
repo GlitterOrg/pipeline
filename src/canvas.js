@@ -8,12 +8,15 @@ goog.scope(function() {
 /**
  * A write only rendering context, records commands to be replayed later.
  * @export
- * */
+ */
 canvas.RenderingContext = goog.defineClass(null, {
   /** @constructor */
   constructor: function() {
     /** @private {boolean} */
     this.writable_ = false;
+
+    /** @private {boolean} */
+    this.seenSuper_ = false;
 
     /** @private {!Array.<!canvas.Command_>} */
     this.commands_ = [];
@@ -33,6 +36,7 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.writable_ = writable;
     if (writable) {
       this.commands_ = []; // TODO add assert here.
+      this.seenSuper_ = false;
     }
   },
 
@@ -48,15 +52,19 @@ canvas.RenderingContext = goog.defineClass(null, {
 
   /**
    * Writes the command list to a real context, and clears the command buffer.
-   * @param {!CanvasRenderingContext2D} ctx
+   * @param {!CanvasRenderingContext2D} lower
+   * @param {!CanvasRenderingContext2D} upper
    */
-  write: function(ctx) {
+  write: function(lower, upper) {
     // Check that we aren't writable.
     goog.asserts.assert(!this.writable_);
+    var ctx = lower; // Begin with the lower context.
 
     for (var i = 0; i < this.commands_.length; i++) {
       var cmd = this.commands_[i];
-      if (ContextProperty_[cmd.command]) {
+      if (cmd.command == CommandType_.PAINT_SUPER) {
+        ctx = upper;
+      } else if (ContextProperty_[cmd.command]) {
         ctx[cmd.command] = cmd.args[0];
       } else {
         CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
@@ -82,6 +90,12 @@ canvas.RenderingContext = goog.defineClass(null, {
 
     // Push command onto list.
     this.commands_.push({command: command, args: args});
+  },
+
+  paintSuper: function() {
+    goog.asserts.assert(!this.seenSuper_, 'paintSuper already been called.');
+    this.seenSuper_ = true;
+    this.push_(CommandType_.PAINT_SUPER);
   },
 
   save: function() {
@@ -370,6 +384,7 @@ canvas.Command_;
  * @private
  */
 var CommandType_ = {
+  PAINT_SUPER: 'paintSuper',
   SAVE: 'save',
   RESTORE: 'restore',
   SCALE: 'scale',
@@ -478,6 +493,7 @@ var isNumArray_ = function(numArr) {
  * @private
  */
 canvas.VerifyMap_ = {};
+canvas.VerifyMap_[CommandType_.PAINT_SUPER] = [];
 canvas.VerifyMap_[CommandType_.SAVE] = [];
 canvas.VerifyMap_[CommandType_.RESTORE] = [];
 canvas.VerifyMap_[CommandType_.SCALE] = [isNum_, isNum_];
