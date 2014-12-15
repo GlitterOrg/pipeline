@@ -53,6 +53,8 @@
         var w = ctx.width;
         var h = ctx.height;
 
+        ctx.paintSuper(); // Draw above existing background.
+
         if (el.style.waveRadius) {
           var rTimes = el.style.waveRadius;
           var positions = parseWavePositions(el);
