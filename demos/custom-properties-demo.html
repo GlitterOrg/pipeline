@@ -28,8 +28,7 @@ registerPropertyHandler('fixup', {
       var endR = Math.min(255, r + 100);
       var endG = Math.min(255, g + 100);
       var endB = Math.min(255, b + 100);
-      var background = 'linear-gradient(' + mutation.result.backgroundColor + ', rgb(' + endR + ', ' + endG + ', ' + endB + '))'
-      mutation.result.background = background;
+      return {background: 'linear-gradient(' + mutation.computed.backgroundColor + ', rgb(' + endR + ', ' + endG + ', ' + endB + '))'};
     }
   }
 });

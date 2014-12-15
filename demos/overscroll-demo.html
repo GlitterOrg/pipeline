@@ -52,12 +52,13 @@ goog.require('pipeline');
 registerPropertyHandler('scrollOut', {
   apply: function(mutation) {
     if (mutation.value == 'glow' && mutation.result.computedScrollDelta !== undefined) {
-      if (mutation.result.overscroll == undefined)
-        mutation.result.overscroll = 0;
-      mutation.result.overscroll = Number(mutation.result.overscroll) + mutation.result.computedScrollDelta;
-      if (mutation.result.overscroll < 0) {
-        mutation.result.scrollOffset = 0;
+      var overscroll = Number(mutation.result.overscroll) || 0;
+      overscroll += mutation.result.computedScrollDelta;
+      var rVal = {overscroll: overscroll};
+      if (overscroll < 0) {
+        rVal.scrollOffset = 0;
       }
+      return rVal;
     }
   }
 });

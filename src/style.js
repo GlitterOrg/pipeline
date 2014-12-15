@@ -116,12 +116,27 @@ style.handleCustomPropertiesForElement_ = function(el) {
     if (el.style[name] == undefined)
       continue;
     // TODO: Work out how to order these for complex property sets
-    if (style.customProperties_[name].apply)
-      style.customProperties_[name].apply({
+    if (style.customProperties_[name].apply) {
+      var result = style.customProperties_[name].apply({
         value: el.style[name],
         result: el.style,
         computed: window.getComputedStyle(el)
       });
+      if (style.customProperties_[name].inherit == true) {
+        for (var i = 0; i < el.children.length; i++) {
+  	el.children[i].style[name] = el.style[name];
+        }
+      }
+      for (var property in result) {
+	if (result[property] !== 'inherit') {
+	  el.style[property] = result[property];
+	}
+      }
+    } else if (style.customProperties_[name].inherit == true) {
+      for (var i = 0; i < el.children.length; i++) {
+	el.children[i].style[name] = el.style[name];
+      }
+    }
   }
 };
 
