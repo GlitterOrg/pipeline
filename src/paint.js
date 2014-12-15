@@ -28,7 +28,8 @@ paint.canvasUID_ = 0;
 Object.defineProperty(Element.prototype, 'onBackground', {
   get: /** @this {!Element} */ function() { return this._onBackground; },
   set: /** @this {!Element} */ function(fn) {
-    this.style.element = this;
+    // Begin watching this element.
+    // NOTE: will not unwatch.
     this._onBackground = fn;
     paint.setupElement_(this);
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
@@ -40,7 +41,6 @@ Object.defineProperty(Element.prototype, 'onBackground', {
 Object.defineProperty(Element.prototype, 'onContent', {
   get: /** @this {!Element} */ function() { return this._onContent; },
   set: /** @this {!Element} */ function(fn) {
-    this.style.element = this;
     this._onContent = fn;
     paint.setupElement_(this);
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
@@ -61,6 +61,7 @@ paint.setupElement_ = function(el) {
   // Element may already have another layer being custom painted.
   if (el._painted) return;
   el._painted = true;
+  pipeline.upgradeToGlitter_(el);
 
   // Add to list of elements to watch. NOTE will not unwatch.
   if (paint.els_.indexOf(el) < 0) {

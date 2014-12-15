@@ -26,7 +26,7 @@ style.baseExec_ = css.exec;
 window['css']['exec'] = function(str) {
   var els = document.querySelectorAll('*');
   for (var i = 0; i < els.length; i++)
-    els[i].style.element = els[i];
+    pipeline.upgradeToGlitter_(els[i]);
   style.baseExec_(str);
   style.handleCustomProperties_();
 };
