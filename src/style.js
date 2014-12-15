@@ -124,7 +124,7 @@ style.handleCustomPropertiesForElement_ = function(el) {
       });
       if (style.customProperties_[name].inherit == true) {
         for (var i = 0; i < el.children.length; i++) {
-  	el.children[i].style[name] = el.style[name];
+	  el.children[i].style[name] = el.style[name];
         }
       }
       for (var property in result) {
