@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<link rel="import" href="../src/css-poly.html">
+<script src="../bower_components/closure-library/closure/goog/base.js"></script>
+<script src="../src/deps.js"></script>
+<script>goog.require('pipeline');</script>
+<style>
+#glitter {
+  width: 500px;
+  height: 500px;
+}
+</style>
+<div id='glitter'></div>
+<script>
+registerListPropertyHandler('mouseTrail', {});
+
+var fillColors = ['red', 'green', 'blue', 'yellow'];
+
+glitter.onBackground = function(ctx) {
+  for (var i = 0; i < glitter.style.mouseTrail.length; i++) {
+    var sparkle = glitter.style.mouseTrail[i];
+    var color = Math.round(Math.random() * fillColors.length - 0.5);
+    ctx.setFillColor(fillColors[color]);
+    ctx.fillRect(sparkle[0] - 1, sparkle[1] - 1, 3, 3);
+  }
+}
+
+var TRAIL_LENGTH = 10;
+glitter.style.mouseTrail = [];
+var processingHappened = false;
+var idleFrameStarted = false;
+
+glitter.addEventListener('mousemove', function(evt) {
+  var mt = glitter.style.mouseTrail;
+  mt.push([evt.clientX - 8,evt.clientY - 8]);
+  if (mt.length > TRAIL_LENGTH) {
+    mt = mt.slice(1);
+  }
+  glitter.style.mouseTrail = mt;
+  processingHappened = true;
+  if (!idleFrameStarted) {
+    requestAnimationFrame(idleFrame);
+    idleFrameStarted = true;
+  }
+});
+
+var idleFrame = function() {
+  if (glitter.style.mouseTrail.length > 0) {
+    requestAnimationFrame(idleFrame);
+    if (processingHappened) {
+      processingHappened = false;
+      return;
+    }
+    glitter.style.mouseTrail = glitter.style.mouseTrail.slice(1);
+  } else {
+    idleFrameStarted = false;
+  }
+}
+
+</script>
