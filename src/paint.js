@@ -423,6 +423,7 @@ paint.styleHighElement_ = function(el, canvasName, computedStyle) {
   child.style.width = '0';
   child.style.height = '0';
   child.style.backgroundImage = '-webkit-canvas(' + canvasName + ')';
+  child.style.pointerEvents = 'none';
 };
 
 
