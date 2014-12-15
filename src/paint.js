@@ -30,7 +30,6 @@ Object.defineProperty(Element.prototype, 'onBackground', {
   set: /** @this {!Element} */ function(fn) {
     // Begin watching this element.
     // NOTE: will not unwatch.
-    pipeline.upgradeToGlitter_(this);
     this._onBackground = fn;
     paint.setupElement_(this);
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
@@ -42,12 +41,15 @@ Object.defineProperty(Element.prototype, 'onBackground', {
 Object.defineProperty(Element.prototype, 'onContent', {
   get: /** @this {!Element} */ function() { return this._onContent; },
   set: /** @this {!Element} */ function(fn) {
-    this.style.element = this;
     this._onContent = fn;
     paint.setupElement_(this);
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
   }
 });
+
+
+/** @private {!Array<!Element>} List of elements which have custom paint. */
+paint.els_ = [];
 
 
 /**
@@ -59,6 +61,7 @@ paint.setupElement_ = function(el) {
   // Element may already have another layer being custom painted.
   if (el._painted) return;
   el._painted = true;
+  pipeline.upgradeToGlitter_(el);
 
   // Add to list of elements to watch. NOTE will not unwatch.
   if (paint.els_.indexOf(el) < 0) {
