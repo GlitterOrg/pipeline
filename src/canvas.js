@@ -59,16 +59,37 @@ canvas.RenderingContext = goog.defineClass(null, {
     // Check that we aren't writable.
     goog.asserts.assert(!this.writable_);
     var ctx = lower; // Begin with the lower context.
+    var stateCommands = [];
 
     for (var i = 0; i < this.commands_.length; i++) {
       var cmd = this.commands_[i];
+
+      // Keep a record of all the command which effect canvas state.
+      if (ctx == lower && StateCommand_[cmd.command]) {
+        stateCommands.push(cmd);
+      }
+
       if (cmd.command == CommandType_.PAINT_SUPER) {
         ctx = upper;
-      } else if (ContextProperty_[cmd.command]) {
-        ctx[cmd.command] = cmd.args[0];
+
+        for (var j = 0; j < stateCommands.length; j++) {
+          this.applyCommand_(ctx, stateCommands[j]);
+        }
       } else {
-        CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
+        this.applyCommand_(ctx, cmd);
       }
+    }
+  },
+
+  /**
+   * @param {!CanvasRenderingContext2D} ctx
+   * @param {!canvas.Command_} cmd
+   */
+  applyCommand_: function(ctx, cmd) {
+    if (ContextProperty_[cmd.command]) {
+      ctx[cmd.command] = cmd.args[0];
+    } else {
+      CanvasRenderingContext2D.prototype[cmd.command].apply(ctx, cmd.args);
     }
   },
 
@@ -338,6 +359,10 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.push_(CommandType_.FILL_COLOR, fillColor);
   },
 
+  setStrokeColor: function(strokeColor) {
+    this.push_(CommandType_.STROKE_COLOR, strokeColor);
+  },
+
   /** @param {number} lineWidth */
   setLineWidth: function(lineWidth) {
     this.push_(CommandType_.LINE_WIDTH, lineWidth);
@@ -417,6 +442,7 @@ var CommandType_ = {
   SHADOW_OFFSET_Y: 'shadowOffsetY',
   SHADOW_BLUR: 'shadowBlur',
   SHADOW_COLOR: 'shadowColor',
+  STROKE_COLOR: 'strokeStyle',
   FILL_COLOR: 'fillStyle',
   LINE_WIDTH: 'lineWidth',
   LINE_CAP: 'lineCap',
@@ -445,8 +471,39 @@ ContextProperty_[CommandType_.LINE_CAP] = true;
 ContextProperty_[CommandType_.LINE_JOIN] = true;
 ContextProperty_[CommandType_.MITER_LIMIT] = true;
 ContextProperty_[CommandType_.FONT] = true;
+ContextProperty_[CommandType_.STROKE_COLOR] = true;
 ContextProperty_[CommandType_.TEXT_ALIGN] = true;
 ContextProperty_[CommandType_.TEXT_BASELINE] = true;
+
+
+/**
+ * @enum {boolean}
+ * @private
+ */
+var StateCommand_ = {};
+StateCommand_[CommandType_.SAVE] = true;
+StateCommand_[CommandType_.RESTORE] = true;
+StateCommand_[CommandType_.SCALE] = true;
+StateCommand_[CommandType_.ROTATE] = true;
+StateCommand_[CommandType_.TRANSLATE] = true;
+StateCommand_[CommandType_.TRANSFORM] = true;
+StateCommand_[CommandType_.SET_TRANSFORM] = true;
+StateCommand_[CommandType_.RESET_TRANSFORM] = true;
+StateCommand_[CommandType_.ALPHA] = true;
+StateCommand_[CommandType_.COMPOSITE_OPERATION] = true;
+StateCommand_[CommandType_.SHADOW_OFFSET_X] = true;
+StateCommand_[CommandType_.SHADOW_OFFSET_Y] = true;
+StateCommand_[CommandType_.SHADOW_BLUR] = true;
+StateCommand_[CommandType_.SHADOW_COLOR] = true;
+StateCommand_[CommandType_.STROKE_COLOR] = true;
+StateCommand_[CommandType_.FILL_COLOR] = true;
+StateCommand_[CommandType_.LINE_WIDTH] = true;
+StateCommand_[CommandType_.LINE_CAP] = true;
+StateCommand_[CommandType_.LINE_JOIN] = true;
+StateCommand_[CommandType_.MITER_LIMIT] = true;
+StateCommand_[CommandType_.FONT] = true;
+StateCommand_[CommandType_.TEXT_ALIGN] = true;
+StateCommand_[CommandType_.TEXT_BASELINE] = true;
 
 
 /**
@@ -518,8 +575,6 @@ canvas.VerifyMap_[CommandType_.BEZIER_CURVE_TO] =
 canvas.VerifyMap_[CommandType_.ARC_TO] =
     [isNum_, isNum_, isNum_, isNum_, isNum_];
 canvas.VerifyMap_[CommandType_.RECT] = [isNum_, isNum_, isNum_, isNum_];
-canvas.VerifyMap_[CommandType_.RECT] =
-    [isNum_, isNum_, isNum_, isNum_, isNumOrUndefined_];
 canvas.VerifyMap_[CommandType_.ARC] =
     [isNum_, isNum_, isNum_, isNum_, isNum_, isNumOrUndefined_];
 canvas.VerifyMap_[CommandType_.FILL] = [];
@@ -536,6 +591,7 @@ canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_X] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_OFFSET_Y] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_BLUR] = [isNum_];
 canvas.VerifyMap_[CommandType_.SHADOW_COLOR] = [isString_];
+canvas.VerifyMap_[CommandType_.STROKE_COLOR] = [isString_];
 canvas.VerifyMap_[CommandType_.FILL_COLOR] = [isString_];
 canvas.VerifyMap_[CommandType_.LINE_WIDTH] = [isNum_];
 canvas.VerifyMap_[CommandType_.LINE_CAP] = [isString_];

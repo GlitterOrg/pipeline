@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <link rel="import" href="../src/css-poly.html">
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="../src/deps.js"></script>
+    <script>goog.require('pipeline');</script>
+  </head>
+  <body>
+    <div>
+      <div id="foo" style="width: 100px; height: 100px;"></div>
+    </div>
+    <script>
+      var el = document.getElementById('foo');
+
+      registerPropertyHandler('cbProgress', {animateAs: 'number'});
+      registerPropertyHandler('scale', {animateAs: 'number'});
+      registerPropertyHandler('waveProgress', {animateAs: 'number'});
+      registerPropertyHandler('waveColor', {animateAs: 'string'});
+
+      var WAVE_MAX_R = 18;
+      var OPACITY_INITIAL = 0.25;
+      var OPACITY_DECAY = 0.22;
+
+      // TODO: draw background outside of bounds.
+      el.onBackground = function(ctx) {
+        var waveRadiusFn = function(time, ww, hh) {
+          var waveRadius = Math.min(Math.sqrt(ww * ww + hh * hh), WAVE_MAX_R) * 1.1 + 5;
+          var duration = 1.1 - .2 * (waveRadius / WAVE_MAX_R);
+          var tt = (time / duration);
+          var size = waveRadius * (1 - Math.pow(80, -tt));
+          return Math.abs(size);
+        };
+
+        var waveOpacityFn = function(time) {
+          return Math.max(0, OPACITY_INITIAL - time * OPACITY_DECAY);
+        };
+
+        var waveAlpha = waveOpacityFn(el.style.waveProgress);
+        var radius = waveRadiusFn(el.style.waveProgress, ctx.width, ctx.height);
+
+        // Draw ripple.
+        ctx.setFillColor('rgba('+(el.style.waveColor||'0,0,0')+','+waveAlpha+')');
+        ctx.beginPath();
+        ctx.arc(ctx.width / 2, ctx.height / 2, radius, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      el.onContent = function(ctx) {
+        var borderRadius = 2;
+        var borderThickness = 2;
+        var tickThickness = 2;
+        var outerWidth = 18;
+        var outerHeight = 18;
+        var x = ctx.width / 2 - outerWidth / 2;
+        var y = ctx.height / 2 - outerHeight / 2;
+        borderRadius = Math.min(borderRadius, outerWidth / 2);
+        borderRadius = Math.min(borderRadius, outerHeight / 2);
+
+        var br = borderRadius - borderThickness / 2;
+        var hbt = borderThickness / 2;
+        var radMax = Math.sqrt(outerWidth*outerWidth + outerHeight*outerHeight) / 2;
+        var scale = Number(el.style.scale || 1.0);
+
+        ctx.translate(x, y);
+
+        // Apply scale.
+        ctx.translate(outerWidth / 2, outerHeight / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-outerWidth / 2, -outerHeight / 2);
+
+        // Draw clip for checkbox.
+        ctx.setFillColor('rgba(0,0,0,1)');
+        ctx.beginPath();
+        ctx.arc(outerWidth / 2, outerHeight / 2, Math.round(radMax * el.style.cbProgress), 0, 2*Math.PI);
+        ctx.fill();
+
+        // Draw box.
+        ctx.setCompositeOperation('source-in');
+        ctx.setFillColor('rgb(0,150,136)');
+        ctx.beginPath();
+        ctx.moveTo(outerWidth / 2, 0);
+        ctx.arcTo(outerWidth, 0, outerWidth, outerHeight / 2, borderRadius);
+        ctx.arcTo(outerWidth, outerHeight, outerWidth / 2, outerHeight, borderRadius);
+        ctx.arcTo(0, outerHeight, 0, outerHeight / 2, borderRadius);
+        ctx.arcTo(0, 0, outerWidth / 2, 0, borderRadius);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw tick.
+        ctx.setCompositeOperation('source-atop');
+        ctx.setStrokeColor('rgb(255,255,255)');
+        ctx.setLineWidth(tickThickness);
+        ctx.beginPath();
+        ctx.moveTo(outerWidth / 8, outerHeight / 2);
+        ctx.lineTo(Math.round(outerWidth / 3), Math.round(outerHeight * 0.75));
+        ctx.lineTo(Math.round(outerWidth * 7 / 8), Math.round(outerHeight / 4));
+        ctx.stroke();
+
+        // Draw border underneath (last).
+        ctx.setCompositeOperation('destination-over');
+        ctx.setStrokeColor('rgba(0,0,0,0.54)');
+        ctx.setLineWidth(borderThickness);
+        ctx.beginPath();
+        ctx.moveTo(outerWidth / 2, hbt);
+        ctx.arcTo(outerWidth - hbt, hbt, outerWidth - hbt, outerHeight / 2, br);
+        ctx.arcTo(outerWidth - hbt, outerHeight - hbt, outerWidth / 2, outerHeight - hbt, br);
+        ctx.arcTo(hbt, outerHeight - hbt, hbt, outerHeight / 2, br);
+        ctx.arcTo(hbt, hbt, outerWidth / 2, hbt, br);
+        ctx.closePath();
+        ctx.stroke();
+      };
+
+      var checked = false;
+      el.addEventListener('click', function() {
+        if (checked) {
+          el.style.waveColor = '0,150,136';
+          el.animate([
+              {offset: 0, cbProgress: 1, scale: 1},
+              {offset: 0.5, scale: 0.8},
+              {offset: 1, cbProgress: 0, scale: 1}
+          ], {duration: 200, fill: 'forwards'});
+        } else {
+          el.style.waveColor = '0,0,0';
+          el.animate([
+              {offset: 0, cbProgress: 0, scale: 1},
+              {offset: 0.5, scale: 0.8},
+              {offset: 1, cbProgress: 1, scale: 1}
+          ], {duration: 200, fill: 'forwards'});
+        }
+
+        el.animate([
+            {waveProgress: 0},
+            {waveProgress: 1}
+        ], {duration: 350});
+
+        checked = !checked;
+      });
+    </script>
+  </body>
+</html>
