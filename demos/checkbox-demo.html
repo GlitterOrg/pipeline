@@ -5,10 +5,20 @@
     <script src="../bower_components/closure-library/closure/goog/base.js"></script>
     <script src="../src/deps.js"></script>
     <script>goog.require('pipeline');</script>
+    <style>
+      #foo {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        top: 100px;
+        left: 50px;
+      }
+    </style>
   </head>
   <body>
     <div>
-      <div id="foo" style="width: 100px; height: 100px;"></div>
+      <div id="foo"></div>
     </div>
     <script>
       var el = document.getElementById('foo');
@@ -22,7 +32,7 @@
       var OPACITY_INITIAL = 0.25;
       var OPACITY_DECAY = 0.22;
 
-      // TODO: draw background outside of bounds.
+      el.additionalBackground = {top: 20, bottom: 20, left: 20, right: 20};
       el.onBackground = function(ctx) {
         var waveRadiusFn = function(time, ww, hh) {
           var waveRadius = Math.min(Math.sqrt(ww * ww + hh * hh), WAVE_MAX_R) * 1.1 + 5;

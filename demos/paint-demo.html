@@ -5,9 +5,25 @@
     <script src="../bower_components/closure-library/closure/goog/base.js"></script>
     <script src="../src/deps.js"></script>
     <script>goog.require('pipeline');</script>
+    <style>
+      #foo {
+        background: #fafafa;
+        border-radius: 3px;
+        box-shadow: 0 2px 10px 0 rgba(0,0,0,.16);
+        color: #666;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 14px;
+        -webkit-user-select: none;
+
+        width: 500px;
+        height: 500px;
+      }
+
+    </style>
   </head>
   <body>
-    <div style="width: 500px; height: 500px; cursor: pointer; display: inline-block; color: #666; font-size:14px; background: #fafafa; box-shadow: 0 2px 10px 0 rgba(0,0,0,.16); border-radius: 3px; -webkit-user-select: none;">BUTTON</div>
+    <div id="foo">BUTTON</div>
     <script>
       var WAVE_MAX_R = 150;
 
