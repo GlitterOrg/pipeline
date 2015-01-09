@@ -1,6 +1,6 @@
 ## Glitter - Explaining CSS & Layout
 
-*Join glitter-dev@chromium.org to follow along this lovely adventure.*
+*Join the [glitter-dev@chromium.org list](https://groups.google.com/a/chromium.org/forum/#!forum/glitter-dev) to follow along this lovely adventure.*
 
 Glitter is a project to explain CSS & Layout on the web, in line with the
 [Extensible Web Manifesto](http://extensiblewebmanifesto.org/). This document is
