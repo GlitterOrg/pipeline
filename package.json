@@ -1,0 +1,6 @@
+{ "name": "pipeline",
+  "devDependencies": {
+    "mocha": "latest",
+    "chai": "latest"
+  }
+}

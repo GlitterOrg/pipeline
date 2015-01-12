@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<link rel="import" href="../src/css-poly.html">
+<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+<script src="../bower_components/closure-library/closure/goog/base.js"></script>
+<script src="../src/deps.js"></script>
+<script>goog.require('pipeline');</script>
+<script src="../node_modules/mocha/mocha.js"></script>
+<script src="../node_modules/chai/chai.js"></script>
+<script>
+var assert = chai.assert;
+mocha.setup({ ui: 'tdd' });
+</script>
+<script>
+
+/** align-content */
+registerPropertyHandler('myAlignContent', {
+  apply: function(mutation) {
+    if (mutation.value == 'inherit')
+      return {alignContent: mutation.result.myAlignContentInherit};
+    return {alignContent: mutation.value, myAlignContentInherit: mutation.value};
+  }
+});
+registerPropertyHandler('myAlignContentInherit', {inherit: true});
+
+/** align-items and align-self */
+registerPropertyHandler('myAlignItems', {
+  apply: function(mutation) {
+    if (mutation.value == 'inherit') {
+      var value = mutation.result.myAlignItemsInherit;
+      return {alignItems: value, myAlignItemsParent: value};
+    } else {
+      var value = mutation.value;
+      return {alignItems: value, myAlignItemsParent: value, myAlignItemsInherit: value};
+    }
+  }
+});
+registerPropertyHandler('myAlignItemsInherit', {inherit: true});
+/*
+registerPropertyHandler('myAlignItemsParent', {
+    inherit: true,
+    apply: function(mutation) {
+      if (mutation.style.alignItems == undefined) {
+        return {myAlignItemsParent: undefined};
+      }
+    }
+});
+*/
+</script>
+<div id='mocha'></div>
+<css-poly>
+#testDiv {
+  myAlignContent: flex-start;
+  myAlignItems: flex-end;
+}
+
+#child2 {
+  myAlignContent: inherit;
+  myAlignItems: inherit;
+}
+</css-poly>
+<div id='testDiv'><div id='child1'></div><div id='child2'></div></div>
+<script>
+suite('align-content', function() {
+  test('basic value is preserved', function() {
+    assert.equal(getComputedStyle(testDiv).alignContent,'flex-start');
+  });
+  test('inheritance works', function() {
+    assert.equal(getComputedStyle(child1).alignContent, 'stretch');
+    assert.equal(getComputedStyle(child2).alignContent, 'flex-start');
+  });
+});
+
+suite('align-items', function() {
+  test('basic value is preserved', function() {
+    assert.equal(getComputedStyle(testDiv).alignItems,'flex-end');
+  });
+  test('inheritance works', function() {
+    /** NOTE: this doesn't match the spec, which claims that it should be 'stretch' */
+    assert.equal(getComputedStyle(child1).alignItems, 'start');
+    assert.equal(getComputedStyle(child2).alignItems, 'flex-end');
+  });
+});
+
+
+mocha.run();
+</script>
+
