@@ -38,10 +38,8 @@ function testRuleOrdering() {
   el.className = 'foo bar quix';
 
   // Div matches all rules.
-  checkRuleOrdering(
-      el,
-      '.foo {} .bar {} #id{} .quix{}',
-      ['.foo', '.bar', '.quix', '#id']);
+  checkRuleOrdering(el, '.foo {} .bar {} #id{} .quix{}',
+                    ['.foo', '.bar', '.quix', '#id']);
 
   // TODO add moar tests.
 }
@@ -49,17 +47,15 @@ function testRuleOrdering() {
 function checkSpecificity(rule, a, b, c, opt_el) {
   var el = opt_el || document.createElement('div');
   var stylesheet = parseAStylesheet(rule);
-  assertEquals(
-      (a << 16) | (b << 8) | c,
-      css.calcSpecificity_(stylesheet.value[0].prelude, el));
+  assertEquals((a << 16) | (b << 8) | c,
+               css.calcSpecificity_(stylesheet.value[0].prelude, el));
 }
 
 function checkRuleOrdering(el, styleStr, expected) {
   var stylesheet = cssom.parse(styleStr);
   var result = css.findRules_(stylesheet, el);
-  var resultSelectors = result.map(function(rule) {
-    return rule.selectorText;
-  });
+  var resultSelectors =
+      result.map(function(rule) { return rule.selectorText; });
 
   assertArrayEquals(expected, resultSelectors);
 }

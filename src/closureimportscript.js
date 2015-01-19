@@ -44,8 +44,7 @@
       // A '..' should pop a directory unless this is not an absolute path and
       // we're at the root, or we've travelled upwards relatively in the last
       // iteration.
-      if (part != '..' ||
-          (!initialSlashes && !newParts.length) ||
+      if (part != '..' || (!initialSlashes && !newParts.length) ||
           newParts[newParts.length - 1] == '..') {
         newParts.push(part);
       } else {
@@ -57,21 +56,35 @@
     return returnPath || '.';
   };
 
-  window.CLOSURE_IMPORT_SCRIPT = function(src) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', src, false);
-    xhr.send(''); // synchronous!
-
+  // write a script tag with inline source.
+  var writeScriptTag = function(text) {
     var el = document.createElement('script');
     el.type = 'text/javascript';
-
-    // Adding sourceURL will make the script appear as if it has been loaded
-    // from netowrk in the chrome devtools script sources. Debug points, etc
-    // persist across page refreshes.
-    el.text = xhr.responseText + '\n//# sourceURL=' + window.location.origin +
-        normalizePath(dirname(window.location.pathname) + '/' + src);
-
+    el.text = text;
     document.getElementsByTagName('head')[0].appendChild(el);
+  };
+
+  window.CLOSURE_IMPORT_SCRIPT = function(src, opt_sourceText) {
+    // Being asked to just run some source in a script tag.
+    if (src.length > 0) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', src, false);
+      xhr.send('');  // synchronous!
+
+      // Adding sourceURL will make the script appear as if it has been loaded
+      // from netowrk in the chrome devtools script sources. Debug points, etc
+      // persist across page refreshes.
+      writeScriptTag(
+          xhr.responseText + '\n//# sourceURL=' + window.location.origin +
+          normalizePath(dirname(window.location.pathname) + '/' + src));
+
+      return true;
+    } else if (opt_sourceText) {
+      writeScriptTag(opt_sourceText);
+      return true;
+    }
+
+    return false;
   };
 
   window.CLOSURE_BASE_PATH =

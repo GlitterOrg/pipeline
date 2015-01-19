@@ -4,9 +4,15 @@ goog.require('canvas');
 
 
 goog.scope(function() {
-var invalidate = function() { return window['pipeline']['invalidate']; };
-var InvalidationLevel =
-    function() { return window['pipeline']['InvalidationLevel']; };
+var invalidate = function() {
+  return window['pipeline']['invalidate'];
+};
+var InvalidationLevel = function() {
+  return window['pipeline']['InvalidationLevel'];
+};
+var upgradeToGlitter = function() {
+  return window['pipeline']['upgradeToGlitter'];
+};
 
 
 /**
@@ -22,6 +28,10 @@ paint.Rect_;
 
 /** @private {number} Unique (incrementing) ID for canvas naming. */
 paint.canvasUID_ = 0;
+
+
+/** @private {number} Unique (incrementing) ID for svg naming. */
+paint.svgUID_ = 0;
 
 
 // Set onBackground for custom paint of the background.
@@ -49,7 +59,8 @@ Object.defineProperty(Element.prototype, 'onContent', {
 
 
 Object.defineProperty(Element.prototype, 'additionalBackground', {
-  get: /** @this {!Element} */ function() { return this._additionalBackground; },
+  get:
+      /** @this {!Element} */ function() { return this._additionalBackground; },
   set: /** @this {!Element} */ function(additionalBackground) {
     this._additionalBackground = additionalBackground;
     invalidate()(this, InvalidationLevel().PAINT_INVALID);
@@ -79,13 +90,14 @@ paint.setupElement_ = function(el) {
   // Element may already have another layer being custom painted.
   if (el._painted) return;
   el._painted = true;
-  pipeline.upgradeToGlitter_(el);
+  upgradeToGlitter()(el);
 
   // Add to list of elements to watch. NOTE will not unwatch.
   if (paint.els_.indexOf(el) < 0) {
     paint.els_.push(el);
   }
 
+  el._svgId = 'svg_' + paint.svgUID_++;
   el._backgroundLowerName = 'a' + paint.canvasUID_++;
   el._backgroundUpperName = 'a' + paint.canvasUID_++;
   el._contentLowerName = 'a' + paint.canvasUID_++;
@@ -138,31 +150,22 @@ paint.paint = function(el) {
   paint.buildDom_(el);
 
   if (el._onBackground) {
-    paint.paintLayer_(
-        el._onBackground,
-        el._backgroundCtx,
-        el._backgroundLowerName,
-        el._backgroundUpperName,
-        el._width,
-        el._height,
-        el._additionalBackground);
+    paint.paintLayer_(null, el._onBackground, el._backgroundCtx,
+                      el._backgroundLowerName, el._backgroundUpperName,
+                      el._width, el._height, el._additionalBackground);
   }
 
   if (el._onContent) {
-    paint.paintLayer_(
-        el._onContent,
-        el._contentCtx,
-        el._contentLowerName,
-        el._contentUpperName,
-        el._width,
-        el._height,
-        el._additionalContent);
+    paint.paintLayer_(el, el._onContent, el._contentCtx, el._contentLowerName,
+                      el._contentUpperName, el._width, el._height,
+                      el._additionalContent);
   }
 };
 
 
 /**
  * Paints a layer.
+ * @param {Element} el The element.
  * @param {function(!canvas.RenderingContext)} func The paint funciton.
  * @param {!canvas.RenderingContext} ctx The write only rendering context.
  * @param {string} lowerName The CSS reference for the lower canvas.
@@ -173,8 +176,8 @@ paint.paint = function(el) {
  *     canvas required.
  * @private
  */
-paint.paintLayer_ = function(func, ctx, lowerName, upperName, width, height,
-    additionalRect) {
+paint.paintLayer_ = function(el, func, ctx, lowerName, upperName, width, height,
+                             additionalRect) {
   if (additionalRect) {
     width += additionalRect.left + additionalRect.right;
     height += additionalRect.top + additionalRect.bottom;
@@ -191,9 +194,8 @@ paint.paintLayer_ = function(func, ctx, lowerName, upperName, width, height,
   ctx.setWritable(false);
 
   // Write commands to backgrounds.
-  ctx.write(
-      document.getCSSCanvasContext('2d', lowerName, width, height),
-      document.getCSSCanvasContext('2d', upperName, width, height));
+  ctx.write(el, document.getCSSCanvasContext('2d', lowerName, width, height),
+            document.getCSSCanvasContext('2d', upperName, width, height));
 };
 
 
@@ -221,7 +223,12 @@ paint.buildDom_ = function(el) {
   cStyle = Window.prototype.getComputedStyle.call(window, el);
 
   var rect = el.getBoundingClientRect();
-  var defaultAdditional = {top: 0, bottom: 0, left: 0, right: 0};
+  var defaultAdditional = {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  };
   var additionalBack = el._additionalBackground || defaultAdditional;
   var additionalContent = el._additionalContent || defaultAdditional;
   var borderRect = {
@@ -263,8 +270,10 @@ paint.buildParentShadowDom_ = function(el) {
   if (!shadow) shadow = parent.createShadowRoot();
 
   // Get the content element which corresponds to our element.
-  var content = el._className ?
-      shadow.querySelector('content[select=".' + el._className + '"]') : null;
+  var content =
+      el._className ?
+          shadow.querySelector('content[select=".' + el._className + '"]') :
+          null;
 
   // Need to build up shadow root DOM.
   if (!content) {
@@ -273,8 +282,8 @@ paint.buildParentShadowDom_ = function(el) {
       var child = parent.children[i];
 
       // Create a unique className for selecting the individual element.
-      var className = child._className ||
-          'glitter-' + paint.shadowClassNameID_++;
+      var className =
+          child._className || 'glitter-' + paint.shadowClassNameID_++;
       child.classList.add(className);
       child._className = className;
 
@@ -288,7 +297,8 @@ paint.buildParentShadowDom_ = function(el) {
 
   // Insert "high" elements if required.
   if (el._backgroundLower && el._backgroundLower == content.previousSibling &&
-      el._contentUpper && el._contentUpper == content.nextSibling) return;
+      el._contentUpper && el._contentUpper == content.nextSibling)
+    return;
 
   el._backgroundLower = document.createElement('div');
   el._backgroundLower.innerHTML = '<div></div>';
@@ -319,13 +329,13 @@ paint.buildShadowDom_ = function(el) {
 
   // Check if the elements are already correct.
   if (el._backgroundUpper && el._backgroundUpper == shadow.children[0] &&
-      el._contentLower && el._contentLower == shadow.children[1]) return;
+      el._contentLower && el._contentLower == shadow.children[1])
+    return;
 
   // TODO: load a HTML template async with DOM for this.
-  shadow.innerHTML =
-      '<div><div></div></div>' +
-      '<div><div></div></div>' +
-      '<content></content>';
+  shadow.innerHTML = '<div><div></div></div>' +
+                     '<div><div></div></div>' +
+                     '<content></content>';
 
   el._backgroundUpper = shadow.children[0];
   el._contentLower = shadow.children[1];
@@ -356,11 +366,12 @@ paint.positionElement_ = function(el, rect, additionalRect, borderRect) {
   var elRect = child.getBoundingClientRect();
 
   var width = rect.width - borderRect.left - borderRect.right +
-      additionalRect.left + additionalRect.right;
+              additionalRect.left + additionalRect.right;
   var height = rect.height - borderRect.top - borderRect.bottom +
-      additionalRect.top + additionalRect.bottom;
+               additionalRect.top + additionalRect.bottom;
 
-  var posLeft = (rect.left - elRect.left) - additionalRect.left + borderRect.left;
+  var posLeft =
+      (rect.left - elRect.left) - additionalRect.left + borderRect.left;
   var posTop = (rect.top - elRect.top) - additionalRect.top + borderRect.top;
 
   child.style.paddingRight = width + 'px';
@@ -399,7 +410,8 @@ paint.styleHighElement_ = function(el, canvasName, computedStyle) {
   el.style.pointerEvents = 'none';
 
   child.style.webkitUserSelect = 'none';
-  child.style.display = computedStyle.display.indexOf('inline') == 0 ? 'block' : 'inline-block';
+  child.style.display =
+      computedStyle.display.indexOf('inline') == 0 ? 'block' : 'inline-block';
   child.style.lineHeight = '0';
   child.style.width = '0';
   child.style.height = '0';

@@ -3,9 +3,15 @@ goog.provide('style');
 goog.require('css');
 
 goog.scope(function() {
-var invalidate = function() { return window['pipeline']['invalidate']; };
-var InvalidationLevel =
-    function() { return window['pipeline']['InvalidationLevel']; };
+var invalidate = function() {
+  return window['pipeline']['invalidate'];
+};
+var InvalidationLevel = function() {
+  return window['pipeline']['InvalidationLevel'];
+};
+var upgradeToGlitter = function() {
+  return window['pipeline']['upgradeToGlitter'];
+};
 
 
 /**
@@ -25,8 +31,9 @@ style.baseExec_ = css.exec;
 /** @param {string} str */
 window['css']['exec'] = function(str) {
   var els = document.querySelectorAll('*');
-  for (var i = 0; i < els.length; i++)
-    pipeline.upgradeToGlitter_(els[i]);
+  for (var i = 0; i < els.length; i++) {
+    upgradeToGlitter()(els[i]);
+  }
   style.baseExec_(str);
   style.handleCustomProperties_();
 };
@@ -52,13 +59,13 @@ var registerPropertyHandler = function(name, record) {
       return this['_' + name];
     },
     set: /** @this {!CSSStyleDeclaration} */ function(v) {
-      invalidate()(
-          this.element, InvalidationLevel().STYLE_INVALID);
+      invalidate()(this.element, InvalidationLevel().STYLE_INVALID);
       this['_' + name] = v;
     }
   });
 };
 goog.exportSymbol('registerPropertyHandler', registerPropertyHandler);
+
 
 /**
  * Register a property handler for the provided name.
@@ -76,14 +83,12 @@ var registerListPropertyHandler = function(name, record) {
       return this['_' + name];
     },
     set: /** @this {!CSSStyleDeclaration} */ function(v) {
-      invalidate()(
-          this.element, InvalidationLevel().STYLE_INVALID);
+      invalidate()(this.element, InvalidationLevel().STYLE_INVALID);
       this['_' + name] = v;
     }
   });
 };
 goog.exportSymbol('registerListPropertyHandler', registerListPropertyHandler);
-
 
 
 /**
@@ -113,8 +118,7 @@ style.handleCustomPropertiesForElement_ = function(el) {
       }
   }
   for (name in style.customProperties_) {
-    if (el.style[name] == undefined)
-      continue;
+    if (el.style[name] == undefined) continue;
     // TODO: Work out how to order these for complex property sets
     if (style.customProperties_[name].apply)
       style.customProperties_[name].apply({
@@ -139,11 +143,11 @@ style.scrollers_ = [];
 var isAScroller = function(element) {
   element._deltas = [];
   element._position = 0;
-  //element.addEventListener('wheel', function(e) {
+  // element.addEventListener('wheel', function(e) {
   //  element._deltas.push(e.wheelDeltaY);
   //});
-  window['PolymerGestures'].addEventListener(element.parentElement, 'track',
-      function(e) {
+  window['PolymerGestures'].addEventListener(
+      element.parentElement, 'track', function(e) {
         element._deltas.push(e['ddy']);
         invalidate()(element, InvalidationLevel().STYLE_INVALID);
       });
