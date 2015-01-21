@@ -21,39 +21,33 @@ function testEmptyStylesheet() {
 }
 
 function testSingleRuleStylesheet() {
-  var stylesheet = cssom.parse(
-      '.foo { bar: red; bar-quix: blue; -webkit-bar-quix: blue;}');
+  var stylesheet =
+      cssom.parse('.foo { bar: red; bar-quix: blue; -webkit-bar-quix: blue;}');
   assertEquals(1, stylesheet.cssRules.length);
 
   assertEquals('.foo', stylesheet.cssRules[0].selectorText);
-  checkStyle(
-      {'bar': 'red', 'barQuix': 'blue', 'webkitBarQuix': 'blue'},
-      stylesheet.cssRules[0].style);
+  checkStyle({'bar': 'red', 'barQuix': 'blue', 'webkitBarQuix': 'blue'},
+             stylesheet.cssRules[0].style);
 }
 
 function testMultiRuleStylesheet() {
-  var stylesheet = cssom.parse(
-      '.foo { bar: red !important; -o-bar: red !important; }' +
-      '.quix { size: calc(11px + 50%); }');
+  var stylesheet =
+      cssom.parse('.foo { bar: red !important; -o-bar: red !important; }' +
+                  '.quix { size: calc(11px + 50%); }');
 
   assertEquals(2, stylesheet.cssRules.length);
 
   assertEquals('.foo', stylesheet.cssRules[0].selectorText);
-  checkStyle(
-      {'bar': 'red !important', 'oBar': 'red !important'},
-      stylesheet.cssRules[0].style);
+  checkStyle({'bar': 'red !important', 'oBar': 'red !important'},
+             stylesheet.cssRules[0].style);
 
   assertEquals('.quix', stylesheet.cssRules[1].selectorText);
-  checkStyle(
-      {'size': 'calc(11px + 50%)'},
-      stylesheet.cssRules[1].style);
+  checkStyle({'size': 'calc(11px + 50%)'}, stylesheet.cssRules[1].style);
 }
 
 function checkCollapseSelector(selector) {
   var stylesheet = parseAStylesheet(selector + ' {}');
-  assertEquals(
-      selector,
-      cssom.collapseTokens(stylesheet.value[0].prelude));
+  assertEquals(selector, cssom.collapseTokens(stylesheet.value[0].prelude));
 }
 
 function checkStyle(expected, styleDecl) {

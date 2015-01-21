@@ -1,8 +1,13 @@
 goog.provide('canvas');
 
+goog.require('commands');
 goog.require('goog.asserts');
+goog.require('goog.object');
+goog.require('svg');
 
 goog.scope(function() {
+
+var CommandType_ = commands.Type;
 
 
 /**
@@ -21,6 +26,9 @@ canvas.RenderingContext = goog.defineClass(null, {
     /** @private {!Array.<!canvas.Command_>} */
     this.commands_ = [];
 
+    /** @private {!Array.<!canvas.State_>} */
+    this.stateStack_ = [];
+
     /** @type {number} */
     this.width = 0;
 
@@ -35,7 +43,7 @@ canvas.RenderingContext = goog.defineClass(null, {
   setWritable: function(writable) {
     this.writable_ = writable;
     if (writable) {
-      this.commands_ = []; // TODO add assert here.
+      this.commands_ = [];  // TODO add assert here.
       this.seenSuper_ = false;
     }
   },
@@ -52,14 +60,19 @@ canvas.RenderingContext = goog.defineClass(null, {
 
   /**
    * Writes the command list to a real context, and clears the command buffer.
+   * @param {Element} el
    * @param {!CanvasRenderingContext2D} lower
    * @param {!CanvasRenderingContext2D} upper
    */
-  write: function(lower, upper) {
+  write: function(el, lower, upper) {
     // Check that we aren't writable.
     goog.asserts.assert(!this.writable_);
-    var ctx = lower; // Begin with the lower context.
+    var ctx = lower;  // Begin with the lower context.
     var stateCommands = [];
+    var lastBeginPathIdx = null;
+
+    // Clear state stack.
+    this.stateStack_ = [{clipPath: 'none'}];
 
     for (var i = 0; i < this.commands_.length; i++) {
       var cmd = this.commands_[i];
@@ -69,7 +82,36 @@ canvas.RenderingContext = goog.defineClass(null, {
         stateCommands.push(cmd);
       }
 
+      if (cmd.command == CommandType_.BEGIN_PATH) {
+        lastBeginPathIdx = i;
+      }
+
+      // Update the internal state.
+      if (cmd.command == CommandType_.SAVE) {
+        this.stateStack_.push(
+            goog.object.clone(this.stateStack_[this.stateStack_.length - 1]));
+      }
+
+      if (cmd.command == CommandType_.RESTORE) {
+        this.stateStack_.pop();
+      }
+
+      // Update the internal state with a new clip if applied.
+      if (cmd.command == CommandType_.CLIP && lastBeginPathIdx != null && el) {
+        // Grab all the path commands.
+        var subset = this.commands_.slice(lastBeginPathIdx + 1, i);
+        this.stateStack_[this.stateStack_.length - 1] = {
+          clipPath: this.getClipPathCSSValue_(el._svgId, subset)
+        };
+      }
+
       if (cmd.command == CommandType_.PAINT_SUPER) {
+        // Write the canvas state to the element.
+        if (el) {
+          el.style.webkitClipPath =
+              this.stateStack_[this.stateStack_.length - 1].clipPath;
+        }
+
         ctx = upper;
 
         for (var j = 0; j < stateCommands.length; j++) {
@@ -94,7 +136,7 @@ canvas.RenderingContext = goog.defineClass(null, {
   },
 
   /**
-   * @param {CommandType_} command
+    * @param {CommandType_} command
    * @param {...*} var_args
    */
   push_: function(command, var_args) {
@@ -113,40 +155,57 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.commands_.push({command: command, args: args});
   },
 
+  /**
+   * Given a list of canvas paint commands builds an SVG clip path, and returns
+   * a CSS clip-path value to be applied on the element.
+   * @param {!Array<canvas.Command_>} cmds The paint commands to build up the
+   *     clip path.
+   * @param {number} id The id of the SVG path to use for the clip.
+   * @return {string} The value for the 'clip-path' to be applied on the
+   *     element.
+   * @private
+   */
+  getClipPathCSSValue_: function(id, cmds) {
+    var str = svg.buildPathString(cmds);
+    var clipPath = canvas.SVG_['getElementById'](id);
+    if (!clipPath) {
+      clipPath =
+          document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+      clipPath.setAttribute('id', id);
+      canvas.SVG_.appendChild(clipPath);
+    }
+
+    clipPath.innerHTML = '<path d="' + str + '" />';
+
+    return 'url(#' + id + ')';
+  },
+
+  joinArgs_: function(args) {},
+
   paintSuper: function() {
     goog.asserts.assert(!this.seenSuper_, 'paintSuper already been called.');
     this.seenSuper_ = true;
     this.push_(CommandType_.PAINT_SUPER);
   },
 
-  save: function() {
-    this.push_(CommandType_.SAVE);
-  },
+  save: function() { this.push_(CommandType_.SAVE); },
 
-  restore: function() {
-    this.push_(CommandType_.RESTORE);
-  },
+  restore: function() { this.push_(CommandType_.RESTORE); },
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  scale: function(x, y) {
-    this.push_(CommandType_.SCALE, x, y);
-  },
+  scale: function(x, y) { this.push_(CommandType_.SCALE, x, y); },
 
   /** @param {number} angle */
-  rotate: function(angle) {
-    this.push_(CommandType_.ROTATE, angle);
-  },
+  rotate: function(angle) { this.push_(CommandType_.ROTATE, angle); },
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  translate: function(x, y) {
-    this.push_(CommandType_.TRANSLATE, x, y);
-  },
+  translate: function(x, y) { this.push_(CommandType_.TRANSLATE, x, y); },
 
   /**
    * @param {number} m11
@@ -172,9 +231,7 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.push_(CommandType_.SET_TRANSFORM, m11, m12, m21, m22, dx, dy);
   },
 
-  resetTransform: function() {
-    this.push_(CommandType_.RESET_TRANSFORM);
-  },
+  resetTransform: function() { this.push_(CommandType_.RESET_TRANSFORM); },
 
   /**
    * @param {number} x
@@ -206,29 +263,21 @@ canvas.RenderingContext = goog.defineClass(null, {
     this.push_(CommandType_.STROKE_RECT, x, y, w, h);
   },
 
-  beginPath: function() {
-    this.push_(CommandType_.BEGIN_PATH);
-  },
+  beginPath: function() { this.push_(CommandType_.BEGIN_PATH); },
 
-  closePath: function() {
-    this.push_(CommandType_.CLOSE_PATH);
-  },
+  closePath: function() { this.push_(CommandType_.CLOSE_PATH); },
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  moveTo: function(x, y) {
-    this.push_(CommandType_.MOVE_TO, x, y);
-  },
+  moveTo: function(x, y) { this.push_(CommandType_.MOVE_TO, x, y); },
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  lineTo: function(x, y) {
-    this.push_(CommandType_.LINE_TO, x, y);
-  },
+  lineTo: function(x, y) { this.push_(CommandType_.LINE_TO, x, y); },
 
   /**
    * @param {number} cpx
@@ -249,8 +298,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} y
    */
   bezierCurveTo: function(cp1x, cp1y, cp2x, cp2y, x, y) {
-    this.push_(CommandType_.BEZIER_CURVE_TO,
-        cp1x, cp1y, cp2x, cp2y, x, y);
+    this.push_(CommandType_.BEZIER_CURVE_TO, cp1x, cp1y, cp2x, cp2y, x, y);
   },
 
   /**
@@ -270,9 +318,7 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {number} w
    * @param {number} h
    */
-  rect: function(x, y, w, h) {
-    this.push_(CommandType_.RECT, x, y, w, h);
-  },
+  rect: function(x, y, w, h) { this.push_(CommandType_.RECT, x, y, w, h); },
 
   /**
    * @param {number} x
@@ -283,21 +329,15 @@ canvas.RenderingContext = goog.defineClass(null, {
    * @param {boolean=} opt_anticlockwise
    */
   arc: function(x, y, radius, startAngle, endAngle, opt_anticlockwise) {
-    this.push_(CommandType_.ARC,
-        x, y, radius, startAngle, endAngle, opt_anticlockwise);
+    this.push_(CommandType_.ARC, x, y, radius, startAngle, endAngle,
+               opt_anticlockwise);
   },
 
-  fill: function() {
-    this.push_(CommandType_.FILL);
-  },
+  fill: function() { this.push_(CommandType_.FILL); },
 
-  stroke: function() {
-    this.push_(CommandType_.STROKE);
-  },
+  stroke: function() { this.push_(CommandType_.STROKE); },
 
-  clip: function() {
-    this.push_(CommandType_.CLIP);
-  },
+  clip: function() { this.push_(CommandType_.CLIP); },
 
   /**
    * @param {string} text
@@ -325,9 +365,7 @@ canvas.RenderingContext = goog.defineClass(null, {
   },
 
   /** @param {number} alpha */
-  setAlpha: function(alpha) {
-    this.push_(CommandType_.ALPHA, alpha);
-  },
+  setAlpha: function(alpha) { this.push_(CommandType_.ALPHA, alpha); },
 
   /** @param {number} compositeOperation */
   setCompositeOperation: function(compositeOperation) {
@@ -369,9 +407,7 @@ canvas.RenderingContext = goog.defineClass(null, {
   },
 
   /** @param {string} lineCap */
-  setLineCap: function(lineCap) {
-    this.push_(CommandType_.LINE_CAP, lineCap);
-  },
+  setLineCap: function(lineCap) { this.push_(CommandType_.LINE_CAP, lineCap); },
 
   /** @param {string} lineJoin */
   setLineJoin: function(lineJoin) {
@@ -384,9 +420,7 @@ canvas.RenderingContext = goog.defineClass(null, {
   },
 
   /** @param {string} font */
-  setFont: function(font) {
-    this.push_(CommandType_.FONT, font);
-  },
+  setFont: function(font) { this.push_(CommandType_.FONT, font); },
 
   /** @param {string} textAlign */
   setTextAlign: function(textAlign) {
@@ -400,58 +434,12 @@ canvas.RenderingContext = goog.defineClass(null, {
 });
 
 
-/** @typedef {{command: CommandType_, args: !Array<*>}} */
+/** @typedef {{command: commands.Type, args: !Array<*>}} */
 canvas.Command_;
 
 
-/**
- * @enum {string}
- * @private
- */
-var CommandType_ = {
-  PAINT_SUPER: 'paintSuper',
-  SAVE: 'save',
-  RESTORE: 'restore',
-  SCALE: 'scale',
-  ROTATE: 'rotate',
-  TRANSLATE: 'translate',
-  TRANSFORM: 'transform',
-  SET_TRANSFORM: 'setTransform',
-  RESET_TRANSFORM: 'resetTransform',
-  CLEAR_RECT: 'clearRect',
-  FILL_RECT: 'fillRect',
-  STROKE_RECT: 'strokeRect',
-  BEGIN_PATH: 'beginPath',
-  CLOSE_PATH: 'closePath',
-  MOVE_TO: 'moveTo',
-  LINE_TO: 'lineTo',
-  QUADRATIC_CURVE_TO: 'quadraticCurveTo',
-  BEZIER_CURVE_TO: 'bezierCurveTo',
-  ARC_TO: 'arcTo',
-  RECT: 'rect',
-  ARC: 'arc',
-  FILL: 'fill',
-  STROKE: 'stroke',
-  CLIP: 'clip',
-  FILL_TEXT: 'fillText',
-  STROKE_TEXT: 'strokeText',
-  LINE_DASH: 'lineDash',
-  ALPHA: 'globalAlpha',
-  COMPOSITE_OPERATION: 'globalCompositeOperation',
-  SHADOW_OFFSET_X: 'shadowOffsetX',
-  SHADOW_OFFSET_Y: 'shadowOffsetY',
-  SHADOW_BLUR: 'shadowBlur',
-  SHADOW_COLOR: 'shadowColor',
-  STROKE_COLOR: 'strokeStyle',
-  FILL_COLOR: 'fillStyle',
-  LINE_WIDTH: 'lineWidth',
-  LINE_CAP: 'lineCap',
-  LINE_JOIN: 'lineJoin',
-  MITER_LIMIT: 'miterLimit',
-  FONT: 'font',
-  TEXT_ALIGN: 'textAlign',
-  TEXT_BASELINE: 'textBaseline'
-};
+/** @typedef {{clipPath: string}} */
+canvas.State_;
 
 
 /**
@@ -525,6 +513,15 @@ var isNumOrUndefined_ = function(num) {
 
 
 /**
+ * @param {*} num
+ * @private
+ */
+var isBoolOrUndefined_ = function(num) {
+  goog.asserts.assert(!goog.isDef(num) || goog.isBoolean(num));
+};
+
+
+/**
  * @param {*} str
  * @private
  */
@@ -568,15 +565,15 @@ canvas.VerifyMap_[CommandType_.BEGIN_PATH] = [];
 canvas.VerifyMap_[CommandType_.CLOSE_PATH] = [];
 canvas.VerifyMap_[CommandType_.MOVE_TO] = [isNum_, isNum_];
 canvas.VerifyMap_[CommandType_.LINE_TO] = [isNum_, isNum_];
-canvas.VerifyMap_[CommandType_.QUADRATIC_CURVE_TO] =
-    [isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_
+                      .QUADRATIC_CURVE_TO] = [isNum_, isNum_, isNum_, isNum_];
 canvas.VerifyMap_[CommandType_.BEZIER_CURVE_TO] =
     [isNum_, isNum_, isNum_, isNum_, isNum_, isNum_];
-canvas.VerifyMap_[CommandType_.ARC_TO] =
-    [isNum_, isNum_, isNum_, isNum_, isNum_];
+canvas.VerifyMap_[CommandType_
+                      .ARC_TO] = [isNum_, isNum_, isNum_, isNum_, isNum_];
 canvas.VerifyMap_[CommandType_.RECT] = [isNum_, isNum_, isNum_, isNum_];
 canvas.VerifyMap_[CommandType_.ARC] =
-    [isNum_, isNum_, isNum_, isNum_, isNum_, isNumOrUndefined_];
+    [isNum_, isNum_, isNum_, isNum_, isNum_, isBoolOrUndefined_];
 canvas.VerifyMap_[CommandType_.FILL] = [];
 canvas.VerifyMap_[CommandType_.STROKE] = [];
 canvas.VerifyMap_[CommandType_.CLIP] = [];
@@ -600,5 +597,17 @@ canvas.VerifyMap_[CommandType_.MITER_LIMIT] = [isNum_];
 canvas.VerifyMap_[CommandType_.FONT] = [isString_];
 canvas.VerifyMap_[CommandType_.TEXT_ALIGN] = [isString_];
 canvas.VerifyMap_[CommandType_.TEXT_BASELINE] = [isString_];
+
+
+/** @private {!Element} A SVG element for holding clip-paths. */
+canvas.SVG_ = (function() {
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.style.position = 'absolute';
+  svg.style.top = '-10000px';
+  window.addEventListener(
+      'load', function() { document.body.appendChild(svg); });
+  return svg;
+})();
 
 });  // goog.scope

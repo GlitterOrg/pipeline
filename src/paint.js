@@ -4,9 +4,15 @@ goog.require('canvas');
 
 
 goog.scope(function() {
-var invalidate = function() { return window['pipeline']['invalidate']; };
-var InvalidationLevel =
-    function() { return window['pipeline']['InvalidationLevel']; };
+var invalidate = function() {
+  return window['pipeline']['invalidate'];
+};
+var InvalidationLevel = function() {
+  return window['pipeline']['InvalidationLevel'];
+};
+var upgradeToGlitter = function() {
+  return window['pipeline']['upgradeToGlitter'];
+};
 
 
 /**
@@ -22,6 +28,10 @@ paint.Rect_;
 
 /** @private {number} Unique (incrementing) ID for canvas naming. */
 paint.canvasUID_ = 0;
+
+
+/** @private {number} Unique (incrementing) ID for svg naming. */
+paint.svgUID_ = 0;
 
 
 // Set onBackground for custom paint of the background.
@@ -48,6 +58,25 @@ Object.defineProperty(Element.prototype, 'onContent', {
 });
 
 
+Object.defineProperty(Element.prototype, 'additionalBackground', {
+  get:
+      /** @this {!Element} */ function() { return this._additionalBackground; },
+  set: /** @this {!Element} */ function(additionalBackground) {
+    this._additionalBackground = additionalBackground;
+    invalidate()(this, InvalidationLevel().PAINT_INVALID);
+  }
+});
+
+
+Object.defineProperty(Element.prototype, 'additionalContent', {
+  get: /** @this {!Element} */ function() { return this._additionalContent; },
+  set: /** @this {!Element} */ function(additionalContent) {
+    this._additionalContent = additionalContent;
+    invalidate()(this, InvalidationLevel().PAINT_INVALID);
+  }
+});
+
+
 /** @private {!Array<!Element>} List of elements which have custom paint. */
 paint.els_ = [];
 
@@ -61,13 +90,14 @@ paint.setupElement_ = function(el) {
   // Element may already have another layer being custom painted.
   if (el._painted) return;
   el._painted = true;
-  pipeline.upgradeToGlitter_(el);
+  upgradeToGlitter()(el);
 
   // Add to list of elements to watch. NOTE will not unwatch.
   if (paint.els_.indexOf(el) < 0) {
     paint.els_.push(el);
   }
 
+  el._svgId = 'svg_' + paint.svgUID_++;
   el._backgroundLowerName = 'a' + paint.canvasUID_++;
   el._backgroundUpperName = 'a' + paint.canvasUID_++;
   el._contentLowerName = 'a' + paint.canvasUID_++;
@@ -120,38 +150,39 @@ paint.paint = function(el) {
   paint.buildDom_(el);
 
   if (el._onBackground) {
-    paint.paintLayer_(
-        el._onBackground,
-        el._backgroundCtx,
-        el._backgroundLowerName,
-        el._backgroundUpperName,
-        el._width,
-        el._height);
+    paint.paintLayer_(null, el._onBackground, el._backgroundCtx,
+                      el._backgroundLowerName, el._backgroundUpperName,
+                      el._width, el._height, el._additionalBackground);
   }
 
   if (el._onContent) {
-    paint.paintLayer_(
-        el._onContent,
-        el._contentCtx,
-        el._contentLowerName,
-        el._contentUpperName,
-        el._width,
-        el._height);
+    paint.paintLayer_(el, el._onContent, el._contentCtx, el._contentLowerName,
+                      el._contentUpperName, el._width, el._height,
+                      el._additionalContent);
   }
 };
 
 
 /**
  * Paints a layer.
+ * @param {Element} el The element.
  * @param {function(!canvas.RenderingContext)} func The paint funciton.
  * @param {!canvas.RenderingContext} ctx The write only rendering context.
  * @param {string} lowerName The CSS reference for the lower canvas.
  * @param {string} upperName The CSS reference for the upper canvas.
  * @param {number} width The width of the element.
  * @param {number} height The height of the element.
+ * @param {paint.Rect_|undefined} additionalRect The additional size of the
+ *     canvas required.
  * @private
  */
-paint.paintLayer_ = function(func, ctx, lowerName, upperName, width, height) {
+paint.paintLayer_ = function(el, func, ctx, lowerName, upperName, width, height,
+                             additionalRect) {
+  if (additionalRect) {
+    width += additionalRect.left + additionalRect.right;
+    height += additionalRect.top + additionalRect.bottom;
+  }
+
   // Clear canvases.
   document.getCSSCanvasContext('2d', lowerName, 0, 0);
   document.getCSSCanvasContext('2d', upperName, 0, 0);
@@ -163,9 +194,8 @@ paint.paintLayer_ = function(func, ctx, lowerName, upperName, width, height) {
   ctx.setWritable(false);
 
   // Write commands to backgrounds.
-  ctx.write(
-      document.getCSSCanvasContext('2d', lowerName, width, height),
-      document.getCSSCanvasContext('2d', upperName, width, height));
+  ctx.write(el, document.getCSSCanvasContext('2d', lowerName, width, height),
+            document.getCSSCanvasContext('2d', upperName, width, height));
 };
 
 
@@ -193,7 +223,14 @@ paint.buildDom_ = function(el) {
   cStyle = Window.prototype.getComputedStyle.call(window, el);
 
   var rect = el.getBoundingClientRect();
-  var additionalRect = {top: 0, bottom: 0, left: 0, right: 0};
+  var defaultAdditional = {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  };
+  var additionalBack = el._additionalBackground || defaultAdditional;
+  var additionalContent = el._additionalContent || defaultAdditional;
   var borderRect = {
     top: parseInt(cStyle.borderTopWidth, 10),
     left: parseInt(cStyle.borderLeftWidth, 10),
@@ -202,13 +239,10 @@ paint.buildDom_ = function(el) {
   };
 
   // Position DOMs.
-  paint.positionHighElement_(
-      el._backgroundLower, rect, additionalRect, borderRect);
-  paint.positionLowElement_(
-      el._backgroundUpper, rect, additionalRect, borderRect);
-  paint.positionLowElement_(el._contentLower, rect, additionalRect, borderRect);
-  paint.positionHighElement_(
-      el._contentUpper, rect, additionalRect, borderRect);
+  paint.positionElement_(el._backgroundLower, rect, additionalBack, borderRect);
+  paint.positionElement_(el._backgroundUpper, rect, additionalBack, borderRect);
+  paint.positionElement_(el._contentLower, rect, additionalContent, borderRect);
+  paint.positionElement_(el._contentUpper, rect, additionalContent, borderRect);
 };
 
 
@@ -236,8 +270,10 @@ paint.buildParentShadowDom_ = function(el) {
   if (!shadow) shadow = parent.createShadowRoot();
 
   // Get the content element which corresponds to our element.
-  var content = el._className ?
-      shadow.querySelector('content[select=".' + el._className + '"]') : null;
+  var content =
+      el._className ?
+          shadow.querySelector('content[select=".' + el._className + '"]') :
+          null;
 
   // Need to build up shadow root DOM.
   if (!content) {
@@ -246,8 +282,8 @@ paint.buildParentShadowDom_ = function(el) {
       var child = parent.children[i];
 
       // Create a unique className for selecting the individual element.
-      var className = child._className ||
-          'glitter-' + paint.shadowClassNameID_++;
+      var className =
+          child._className || 'glitter-' + paint.shadowClassNameID_++;
       child.classList.add(className);
       child._className = className;
 
@@ -261,7 +297,8 @@ paint.buildParentShadowDom_ = function(el) {
 
   // Insert "high" elements if required.
   if (el._backgroundLower && el._backgroundLower == content.previousSibling &&
-      el._contentUpper && el._contentUpper == content.nextSibling) return;
+      el._contentUpper && el._contentUpper == content.nextSibling)
+    return;
 
   el._backgroundLower = document.createElement('div');
   el._backgroundLower.innerHTML = '<div></div>';
@@ -292,13 +329,13 @@ paint.buildShadowDom_ = function(el) {
 
   // Check if the elements are already correct.
   if (el._backgroundUpper && el._backgroundUpper == shadow.children[0] &&
-      el._contentLower && el._contentLower == shadow.children[1]) return;
+      el._contentLower && el._contentLower == shadow.children[1])
+    return;
 
   // TODO: load a HTML template async with DOM for this.
-  shadow.innerHTML =
-      '<div><div></div></div>' +
-      '<div><div></div></div>' +
-      '<content></content>';
+  shadow.innerHTML = '<div><div></div></div>' +
+                     '<div><div></div></div>' +
+                     '<content></content>';
 
   el._backgroundUpper = shadow.children[0];
   el._contentLower = shadow.children[1];
@@ -306,8 +343,8 @@ paint.buildShadowDom_ = function(el) {
 
 
 /**
- * Positions a "high" element.
- * @param {!Element} el The "high" element to position.
+ * Positions an element.
+ * @param {!Element} el The element to position.
  * @param {!ClientRect} rect The rect for the size of the element which has the
  *     custom paint.
  * @param {!paint.Rect_} additionalRect The rect for the additional size
@@ -316,77 +353,31 @@ paint.buildShadowDom_ = function(el) {
  *     custom paint.
  * @private
  */
-paint.positionHighElement_ = function(el, rect, additionalRect, borderRect) {
+paint.positionElement_ = function(el, rect, additionalRect, borderRect) {
   var child = goog.asserts.assert(el.children[0]);
 
   // Clear all set styles for measure.
-  child.style.paddingTop = '';
-  child.style.paddingBottom = '';
+  child.style.paddingRight = '1px';
+  child.style.paddingBottom = '1px';
   child.style.marginTop = '';
-  child.style.paddingLeft = '';
   child.style.marginLeft = '';
 
-  // Perform measure of high element.
+  // Perform measure of element.
   var elRect = child.getBoundingClientRect();
 
-  // Determine padding/margins to correct background size.
-  var top = elRect.top - rect.top;
-  var bottom = rect.bottom - elRect.bottom;
-  var width = rect.width;
-  var left = rect.left - elRect.left;
+  var width = rect.width - borderRect.left - borderRect.right +
+              additionalRect.left + additionalRect.right;
+  var height = rect.height - borderRect.top - borderRect.bottom +
+               additionalRect.top + additionalRect.bottom;
 
-  var paddingTop = top - borderRect.top + additionalRect.top;
-  var paddingBottom = bottom - borderRect.bottom + additionalRect.bottom;
-  if (paddingTop < 0) {
-    paddingBottom += paddingTop;
-    paddingTop = 0;
-  }
+  var posLeft =
+      (rect.left - elRect.left) - additionalRect.left + borderRect.left;
+  var posTop = (rect.top - elRect.top) - additionalRect.top + borderRect.top;
 
-  child.style.paddingTop = paddingTop + 'px';
-  child.style.paddingBottom = paddingBottom + 'px';
-  child.style.marginTop = -top + borderRect.top + additionalRect.top + 'px';
-  child.style.paddingLeft = width - borderRect.left - borderRect.right +
-      additionalRect.left + additionalRect.right + 'px';
-  child.style.marginLeft = left - additionalRect.left + borderRect.left + 'px';
-};
-
-
-/**
- * Positions a "low" element.
- * @param {!Element} el The "low" element to position.
- * @param {!ClientRect} rect The rect for the size of the element which has the
- *     custom paint.
- * @param {!paint.Rect_} additionalRect The rect for the additional size
- *     required for the canvas.
- * @param {!paint.Rect_} borderRect The border rect of the element which has the
- *     custom paint.
- * @private
- */
-paint.positionLowElement_ = function(el, rect, additionalRect, borderRect) {
-  var child = goog.asserts.assert(el.children[0]);
-
-  // Clear set styles for measure.
-  child.style.paddingLeft = '1px'; // 1px required for correct measurement.
-  child.style.paddingTop = '1px';
-  child.style.paddingBottom = '';
-  child.style.marginLeft = '';
-
-  // Perform measure of low element.
-  var elRect = el.getBoundingClientRect();
-
-  // Determine padding/margins to correct background size.
-  var top = elRect.top - rect.top;
-  var left = elRect.left - rect.left;
-  var width = rect.width;
-  var height = rect.height;
-  var innerHeight = elRect.height;
-
-  child.style.paddingLeft = width - borderRect.right - borderRect.left +
-      additionalRect.left + additionalRect.right + 'px';
-  child.style.paddingTop = top - borderRect.top + additionalRect.top + 'px';
-  child.style.paddingBottom = height - top - innerHeight -
-      borderRect.bottom + additionalRect.bottom + 'px';
-  child.style.marginLeft = -left + borderRect.left - additionalRect.left + 'px';
+  child.style.paddingRight = width + 'px';
+  child.style.paddingBottom = height + 'px';
+  child.style.marginTop = posTop + 'px';
+  child.style.marginLeft = posLeft + 'px';
 };
 
 
@@ -416,14 +407,16 @@ paint.styleHighElement_ = function(el, canvasName, computedStyle) {
   // TODO: load a HTML template async with style for this.
   el.style.width = '0';
   el.style.height = '0';
+  el.style.pointerEvents = 'none';
 
-  child.innerHTML = '&nbsp';
   child.style.webkitUserSelect = 'none';
-  child.style.display = computedStyle.display;
+  child.style.display =
+      computedStyle.display.indexOf('inline') == 0 ? 'block' : 'inline-block';
   child.style.lineHeight = '0';
   child.style.width = '0';
   child.style.height = '0';
   child.style.backgroundImage = '-webkit-canvas(' + canvasName + ')';
+  child.style.backgroundRepeat = 'no-repeat';
   child.style.pointerEvents = 'none';
 };
 
@@ -440,10 +433,13 @@ paint.styleLowElement_ = function(el, canvasName) {
   // TODO: load a HTML template async with style for this.
   el.style.width = '0';
   el.style.height = '0';
+  el.style.pointerEvents = 'none';
 
-  child.style.display = 'inline';
+  child.style.display = 'block';
   child.style.fontSize = '0';
   child.style.backgroundImage = '-webkit-canvas(' + canvasName + ')';
+  child.style.backgroundRepeat = 'no-repeat';
+  child.style.pointerEvents = 'none';
 };
 
 });  // goog.scope

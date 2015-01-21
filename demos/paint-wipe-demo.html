@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <link rel="import" href="../src/css-poly.html">
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="../src/deps.js"></script>
+    <script>goog.require('pipeline');</script>
+    <style>
+      #foo,
+      #quix {
+        margin: 20px 20px 0 20px;
+        overflow: hidden;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        width: 200px;
+        height: 200px;
+      }
+
+      #foo {
+        background-color: #00897B;
+      }
+
+      #quix {
+        background-color: #009688;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div id="quix">
+        Click me.
+      </div>
+      <div id="foo">
+        Post-ironic meggings biodiesel tousled, artisan fap Godard photo booth taxidermy flannel Shoreditch YOLO jean shorts. Blue Bottle Tumblr salvia cray 3 wolf moon food truck. Neutra polaroid retro, keffiyeh squid Vice keytar vinyl beard Godard. Bicycle rights leggings pork belly Echo Park taxidermy. Thundercats VHS XOXO church-key, cred butcher ugh trust fund bicycle rights vegan aesthetic roof party. Artisan Vice ennui bitters mlkshk. Typewriter Williamsburg banh mi forage kale chips, Wes Anderson mustache 8-bit +1 Brooklyn.
+      </div>
+    </div>
+    <script>
+      var el = document.getElementById('foo');
+
+      registerPropertyHandler('progress', {animateAs: 'number'});
+      registerPropertyHandler('posX', {animateAs: 'number'});
+      registerPropertyHandler('posY', {animateAs: 'number'});
+
+      el.onContent = function(ctx) {
+        var progress = Number(el.style.progress || 0.0);
+        var x = Number(el.style.posX || 0.0);
+        var y = Number(el.style.posY || 0.0);
+
+        ctx.beginPath();
+        ctx.arc(x, y, 250*progress, 0, 2*Math.PI);
+        ctx.clip();
+        ctx.paintSuper();
+      };
+
+      var shown = false;
+      el.addEventListener('click', function(evt) {
+        el.style.posX = evt.clientX;
+        el.style.posY = evt.clientY;
+
+        if (shown) {
+          el.animate([
+              {progress: 1},
+              {progress: 0}
+          ], {duration: 200, fill: 'forwards'});
+        } else {
+          el.animate([
+              {progress: 0},
+              {progress: 1}
+          ], {duration: 200, fill: 'forwards'});
+        }
+
+        shown = !shown;
+      });
+    </script>
+  </body>
+</html>

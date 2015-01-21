@@ -112,7 +112,6 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
       var check = cssom.createGenerator_(arr);
 
       while (arr.length) {
-
         check(cssom.TOKENS.WHITESPACE);
         var property = goog.asserts.assertObject(check(cssom.TOKENS.IDENT));
         var propertyName = cssom.propertyToCamel(property['value']);
@@ -151,12 +150,12 @@ cssom.CSSStyleRule = goog.defineClass(cssom.CSSRule, {
           important = true;
         }
 
-        //goog.asserts.assertObject(check(cssom.TOKENS.SEMI_COLON));
+        // goog.asserts.assertObject(check(cssom.TOKENS.SEMI_COLON));
         check(cssom.TOKENS.SEMI_COLON);
         check(cssom.TOKENS.WHITESPACE);
 
-        rule.style.setProperty(
-            propertyName, propertyValue, important ? 'important' : undefined);
+        rule.style.setProperty(propertyName, propertyValue,
+                               important ? 'important' : undefined);
 
         rule.styleToken[propertyName] = propertyToken;
       }
@@ -180,7 +179,9 @@ cssom.createGenerator_ = function(tokens) {
   return /** @type {function(string, ?=): ?} */ (function(type, opt_value) {
     var tok = tokens[0];
     return tok && (tok['tokenType'] || tok['type']) == type &&
-        (!opt_value || tok['value'] == opt_value) ? tokens.shift() : null;
+                   (!opt_value || tok['value'] == opt_value) ?
+               tokens.shift() :
+               null;
   });
 };
 
@@ -231,8 +232,8 @@ cssom.CSSStyleDeclaration.prototype.getPropertyPriority = function(property) {
  * @param {string} value
  * @param {string=} opt_priority
  */
-cssom.CSSStyleDeclaration.prototype.setProperty = function(
-    property, value, opt_priority) {
+cssom.CSSStyleDeclaration.prototype.setProperty = function(property, value,
+                                                           opt_priority) {
   this.keys_.push(property);
 
   this[property] = value || '';
@@ -248,8 +249,8 @@ cssom.CSSStyleDeclaration.prototype.setProperty = function(
  * @param {string} property
  * @param {string} priority
  */
-cssom.CSSStyleDeclaration.prototype.setPropertyPriority = function(
-    property, priority) {
+cssom.CSSStyleDeclaration.prototype.setPropertyPriority = function(property,
+                                                                   priority) {
   this.priority_[property] = priority || '';
 };
 
@@ -280,7 +281,7 @@ cssom.collapseTokens = function(prelude) {
 
   for (var i = 0; i < prelude.length; i++) {
     var token = goog.asserts.assertObject(prelude[i]);
-    var type = token['tokenType'] || token['name']; // TODO
+    var type = token['tokenType'] || token['name'];  // TODO
     var value = token['value'];
 
     switch (type) {
@@ -350,9 +351,8 @@ cssom.propertyToCamel = function(str) {
   if (ret[0] == '-') ret = ret.substring(1);
 
   // Convert to camel.
-  return ret.replace(/\-([a-z])/g, function(_, match) {
-    return match.toUpperCase();
-  });
+  return ret.replace(
+      /\-([a-z])/g, function(_, match) { return match.toUpperCase(); });
 };
 
 

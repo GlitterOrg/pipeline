@@ -52,9 +52,7 @@ css.applyRules_ = function(stylesheet, el) {
     }
   }
 
-  function apply(el, key, value) {
-    el.style[key] = value;
-  }
+  function apply(el, key, value) { el.style[key] = value; }
 
   for (var key in style) {
     apply(el, key, style[key]);
@@ -80,18 +78,18 @@ css.findRules_ = function(stylesheet, el) {
   var rules = stylesheet.cssRules;
 
   // Find matching rules.
-  var matching = /** @type {!Array.<cssom.CSSStyleRule>} */ (rules).filter(
-      function(rule) {
+  var matching =
+      /** @type {!Array.<cssom.CSSStyleRule>} */ (rules).filter(function(rule) {
         // TODO: add rename matchesSelector to matches in closure externs.
         return (rule.type == cssom.CSSRule.STYLE_RULE) &&
-            el['matches'](
-                (/** @type {cssom.CSSStyleRule} */ (rule)).selectorText);
+               el['matches'](
+                   (/** @type {cssom.CSSStyleRule} */ (rule)).selectorText);
       });
 
   // Sort rules in order.
   return matching.sort(function(a, b) {
     return css.calcSpecificity_(a.selectorTokens, el) -
-        css.calcSpecificity_(b.selectorTokens, el);
+           css.calcSpecificity_(b.selectorTokens, el);
   });
 };
 
@@ -125,9 +123,9 @@ css.calcSpecificity_ = function(prelude, el) {
  * @private
  */
 css.calcSpecificityInternal_ = function(prelude, opt_el) {
-  var a = 0; // ID selectors.
-  var b = 0; // Class selectors, attributes selectors, and pseudo-classes.
-  var c = 0; // Type selectors and pseudo-elements.
+  var a = 0;  // ID selectors.
+  var b = 0;  // Class selectors, attributes selectors, and pseudo-classes.
+  var c = 0;  // Type selectors and pseudo-elements.
 
   var state = css.STATES_.NONE;
 
@@ -143,8 +141,8 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
 
       case css.TOKENS.COLON:
         // Explicity check if we have a double colon as pseudo element.
-        state = state == css.STATES_.PSEUDO ?
-            css.STATES_.PSEUDO_ELEMENT : css.STATES_.PSEUDO;
+        state = state == css.STATES_.PSEUDO ? css.STATES_.PSEUDO_ELEMENT :
+                                              css.STATES_.PSEUDO;
         break;
 
       case css.TOKENS.HASH:
@@ -228,9 +226,9 @@ css.calcSpecificityInternal_ = function(prelude, opt_el) {
           case css.STATES_.PSEUDO:
             // Need to explicity check for pseudo-elements.
             if (css.PSEUDO_ELEMENTS_.indexOf(value) != -1) {
-              c++; // Pseudo-element.
+              c++;  // Pseudo-element.
             } else {
-              b++; // Pseudo-class.
+              b++;  // Pseudo-class.
             }
             break;
         }
@@ -271,13 +269,8 @@ css.STATES_ = {
 
 
 /** @private {!Array.<string>} */
-css.PSEUDO_ELEMENTS_ = [
-  'after',
-  'before',
-  'first-letter',
-  'first-line',
-  'selection'
-];
+css.PSEUDO_ELEMENTS_ =
+    ['after', 'before', 'first-letter', 'first-line', 'selection'];
 
 
 /** @enum {string} */

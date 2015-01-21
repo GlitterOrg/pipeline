@@ -118,18 +118,16 @@ pipeline.pipeline_ = function() {
   pipeline.invalidElements_ = {};
 };
 
+
 /**
  * Upgrade an element to be glitter capable. Ideally this should
  * never need to be public.
  *
- * @param {!Element} element 
- * @private
+ * @param {!Element} element
  */
-pipeline.upgradeToGlitter_ = function(element) {
+pipeline.upgradeToGlitter = function(element) {
   // pin style object by referencing it again.
   element._style = element.style;
   // ensure element is referenceable from style object.
   element.style.element = element;
 };
-
-

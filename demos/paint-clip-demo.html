@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <script src='../bower_components/web-animations-next/web-animations-forced.min.js'></script>
+    <link rel="import" href="../src/css-poly.html">
+    <script src="../bower_components/closure-library/closure/goog/base.js"></script>
+    <script src="../src/deps.js"></script>
+    <script>goog.require('pipeline');</script>
+    <style>
+      #quix {
+        background-color: #009688;
+        color: #ffffff;
+        margin: 20px 20px 0 20px;
+        overflow: hidden;
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div id="quix">
+        Gastropub butcher messenger bag flannel, forage photo booth +1 XOXO Pitchfork fap keffiyeh tofu single-origin coffee seitan. Tilde keytar sustainable, vinyl butcher Thundercats bitters vegan cold-pressed craft beer. Swag Odd Future typewriter, semiotics chia Bushwick before they sold out direct trade PBR bitters gentrify migas seitan pug paleo. Twee viral fashion axe Schlitz food truck. Asymmetrical kale chips post-ironic street art vegan. Whatever American Apparel synth bespoke next level, scenester jean shorts wayfarers typewriter vegan. Master cleanse wayfarers stumptown, whatever vinyl Austin cliche tote bag church-key scenester.
+      </div>
+    </div>
+    <script>
+      var el = document.getElementById('quix');
+      el.onContent = function(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(75,25);
+        ctx.quadraticCurveTo(25,25,25,62.5);
+        ctx.quadraticCurveTo(25,100,50,100);
+        ctx.quadraticCurveTo(50,120,30,125);
+        ctx.quadraticCurveTo(60,120,65,100);
+        ctx.quadraticCurveTo(125,100,125,62.5);
+        ctx.quadraticCurveTo(125,25,75,25);
+        ctx.clip();
+        ctx.paintSuper();
+      };
+    </script>
+  </body>
+</html>
