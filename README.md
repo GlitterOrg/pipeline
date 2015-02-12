@@ -169,7 +169,7 @@ not run C++ in the middle of JS layout instead?
 Developers should be able to perform crazy painting functions and override
 behaviour where necessary. There a couple of litmus use cases for this.
 * Custom 3D shadows. Instead of hacking around with the DOM, 3D Shadows could
-have be implemented as direct draw calls.
+be implemented as direct draw calls.
 * Efficient infinite lists. Minimal DOM for
 new effects (for example Android 5.0 overscroll effect). Instead of creating
 lots of nested DOM to create effects, we could simply paint instead.
